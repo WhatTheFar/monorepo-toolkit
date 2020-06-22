@@ -1,0 +1,3 @@
+[submodule "git-fixture-basic"]
+	path = test/git-fixtures/basic
+	url = https://github.com/WhatTheFar/monorepo-toolkit-git-fixture-basic.git
