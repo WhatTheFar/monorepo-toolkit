@@ -8,20 +8,15 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/whatthefar/monorepo-toolkit/pkg/core"
+	"github.com/whatthefar/monorepo-toolkit/test/git-fixtures"
 )
 
-var (
-	GIT_FIXTURE_BASIC_REPOSITORY = "https://github.com/WhatTheFar/monorepo-toolkit-git-fixture-basic"
-
-	GIT_FIXTURE_BASIC_PATH = "../../test/git-fixtures/basic"
+const (
+	gitFixtureBasicPath = "../../test/git-fixtures/basic"
 )
-
-func compareUrl(repo, from, to string) string {
-	return fmt.Sprintf("%s/compare/%s..%s", repo, from, to)
-}
 
 func TestNewGitGateway(t *testing.T) {
-	git, err := NewGitGateway(GIT_FIXTURE_BASIC_PATH)
+	git, err := NewGitGateway(gitFixtureBasicPath)
 
 	assert.NotNil(t, git)
 	assert.Nil(t, err)
@@ -29,7 +24,7 @@ func TestNewGitGateway(t *testing.T) {
 
 func TestGitGateway(t *testing.T) {
 	Convey("Given a basic repository", t, func() {
-		git, err := NewGitGateway(GIT_FIXTURE_BASIC_PATH)
+		git, err := NewGitGateway(gitFixtureBasicPath)
 
 		So(err, ShouldBeNil)
 
@@ -84,7 +79,7 @@ func TestGitGateway(t *testing.T) {
 			Convey(fmt.Sprintf("Case %d, when call DiffNameOnly from \"%s\" to \"%s\"", i+1, from, to), func() {
 				got, err := git.DiffNameOnly(core.Hash(from), core.Hash(to))
 
-				url := compareUrl(GIT_FIXTURE_BASIC_REPOSITORY, from, to)
+				url := gitfixture.BasicRepository().CompareURL(from, to)
 				Convey(fmt.Sprintf("Then it should return all changes (%s)", url), func() {
 					So(err, ShouldBeNil)
 					So(got, ShouldResemble, want)
