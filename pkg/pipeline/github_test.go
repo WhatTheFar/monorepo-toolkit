@@ -14,6 +14,15 @@ import (
 	mock_pipeline "github.com/whatthefar/monorepo-toolkit/pkg/pipeline/mock"
 )
 
+func requireEnv(t *testing.T, key string) string {
+	env := os.Getenv(key)
+	if env == "" {
+		message := fmt.Sprintf("Requires \"%s\" env", key)
+		assert.FailNow(t, message)
+	}
+	return env
+}
+
 func TestNewGitHubActionGateway(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)
@@ -39,8 +48,7 @@ func TestGitHubActionGateway_LastSuccesfulCommit(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 
-	token := os.Getenv("GITHUB_TOKEN")
-	assert.NotEmpty(t, token, "Requires GITHUB_TOKEN env")
+	token := requireEnv(t, "GITHUB_TOKEN")
 
 	Convey("Given a GitHubActionGateway", t, func() {
 		ctx := context.Background()
@@ -94,8 +102,7 @@ func TestGitHubActionGateway_CurrentCommit(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 
-	token := os.Getenv("GITHUB_TOKEN")
-	assert.NotEmpty(t, token, "Requires GITHUB_TOKEN env")
+	token := requireEnv(t, "GITHUB_TOKEN")
 
 	Convey("Given a GitHubActionGateway", t, func() {
 		ctx := context.Background()
