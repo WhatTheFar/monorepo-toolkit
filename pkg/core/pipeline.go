@@ -17,5 +17,5 @@ type PipelineGateway interface {
 	// outputs one of: success | failed | null
 	BuildStatus(ctx context.Context, buildID string) (string, error)
 	// kills running build identified by given build number
-	KillBuild(buildID string) error
+	KillBuild(ctx context.Context, buildID string) error
 }

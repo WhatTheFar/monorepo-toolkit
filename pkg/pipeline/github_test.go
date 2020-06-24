@@ -318,3 +318,49 @@ func TestGitHubActionGateway_BuildStatus(t *testing.T) {
 
 	})
 }
+
+func TestGitHubActionGateway_KillBulid(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	token := requireEnv(t, "GITHUB_TOKEN")
+
+	Convey("Given a GitHubActionGateway", t, func() {
+		ctx := context.Background()
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		env := mock_pipeline.NewMockGitHubActionEnv(ctrl)
+		env.EXPECT().Token().Return(token)
+
+		repo := gitfixture.PipelineRepository()
+
+		gw := NewGitHubActionGateway(ctx, env)
+
+		Convey("Given a build was triggered via TriggerBuild, on git-fixture-pipeline", func() {
+			env.EXPECT().Owner().Return(repo.Owner())
+			env.EXPECT().Owner().Return(repo.Owner())
+			env.EXPECT().Repository().Return(repo.Repository())
+			env.EXPECT().Repository().Return(repo.Repository())
+			env.EXPECT().EventType().Return("build-kill")
+
+			runID, err := gw.TriggerBuild(ctx, "server")
+
+			So(err, ShouldBeNil)
+			So(runID, ShouldNotBeEmpty)
+
+			Convey("When calls KillBuild with triggered run ID", func() {
+				env.EXPECT().Owner().Return(repo.Owner())
+				env.EXPECT().Repository().Return(repo.Repository())
+
+				err := gw.KillBuild(ctx, runID)
+
+				Convey(fmt.Sprintf("Then it should kill the run"), func() {
+					So(err, ShouldBeNil)
+				})
+			})
+		})
+
+	})
+}

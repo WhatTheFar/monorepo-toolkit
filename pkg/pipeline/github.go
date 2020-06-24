@@ -185,6 +185,16 @@ func (s *gitHubActionGateway) BuildStatus(ctx context.Context, buildID string) (
 }
 
 // kills running build identified by given build number
-func (s *gitHubActionGateway) KillBuild(buildID string) error {
-	panic("not implemented") // TODO: Implement
+func (s *gitHubActionGateway) KillBuild(ctx context.Context, buildID string) error {
+	runID, err := strconv.ParseInt(buildID, 10, 64)
+	if err != nil {
+		return errors.Wrapf(err, "invalid build ID: %s", buildID)
+	}
+	resp, err := s.client.Actions.CancelWorkflowRunByID(ctx, s.env.Owner(), s.env.Repository(), runID)
+	// go-github considers 202 Accepted status codes as an AcceptedError
+	// so, instead of checking if there is an error, we have to handle the response manually
+	if resp.StatusCode == 202 {
+		return nil
+	}
+	return errors.Wrapf(err, "can't cancel a workflow run, ID %d", runID)
 }
