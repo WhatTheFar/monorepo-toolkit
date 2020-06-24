@@ -70,7 +70,7 @@ func (s *gitHubActionGateway) LastSuccessfulCommit(
 
 // get hash of current commit
 func (s *gitHubActionGateway) CurrentCommit() core.Hash {
-	panic("not implemented") // TODO: Implement
+	return core.Hash(s.env.Sha())
 }
 
 // start build of given project

@@ -88,3 +88,47 @@ func TestGitHubActionGateway_LastSuccesfulCommit(t *testing.T) {
 
 	})
 }
+
+func TestGitHubActionGateway_CurrentCommit(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	token := os.Getenv("GITHUB_TOKEN")
+	assert.NotEmpty(t, token, "Requires GITHUB_TOKEN env")
+
+	Convey("Given a GitHubActionGateway", t, func() {
+		ctx := context.Background()
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		env := mock_pipeline.NewMockGitHubActionEnv(ctrl)
+		env.EXPECT().Token().Return(token)
+
+		gw := NewGitHubActionGateway(ctx, env)
+
+		cases := []*struct {
+			sha string
+		}{
+			{sha: "ed5434c198b1721d5c83f3f39b6eea967c16f095"},
+			{sha: "7163c77dbfb2ed57eab8de7eacc528081eb702c1"},
+		}
+
+		for i, v := range cases {
+			var (
+				sha  = v.sha
+				want = core.Hash(sha)
+			)
+
+			Convey(fmt.Sprintf("Case %d, when LastSuccessfulCommit is called with sha env \"%s\", on git-fixture-pipeline", i+1, sha), func() {
+				env.EXPECT().Sha().Return(sha)
+				got := gw.CurrentCommit()
+
+				Convey(fmt.Sprintf("Then it should return commit hash \"%s\" with no error", want), func() {
+					So(got, ShouldEqual, want)
+				})
+			})
+		}
+
+	})
+}
