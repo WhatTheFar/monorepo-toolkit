@@ -165,8 +165,23 @@ func getRunIDFromJobURL(url string) (int64, error) {
 
 // get status of build identified by given build number
 // outputs one of: success | failed | null
-func (s *gitHubActionGateway) BuildStatus(buildID string) (string, error) {
-	panic("not implemented") // TODO: Implement
+func (s *gitHubActionGateway) BuildStatus(ctx context.Context, buildID string) (string, error) {
+	runID, err := strconv.ParseInt(buildID, 10, 64)
+	if err != nil {
+		return "", errors.Wrapf(err, "invalid build ID: %s", buildID)
+	}
+	workflowRun, _, err := s.client.Actions.GetWorkflowRunByID(ctx, s.env.Owner(), s.env.Repository(), runID)
+	if err != nil {
+		return "", errors.Wrapf(err, "can't get a workflow run, ID %d", runID)
+	}
+	switch workflowRun.GetConclusion() {
+	case "success":
+		return "success", nil
+	case "failure", "cancelled":
+		return "failed", nil
+	default:
+		return "", nil
+	}
 }
 
 // kills running build identified by given build number

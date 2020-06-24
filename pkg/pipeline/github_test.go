@@ -264,3 +264,57 @@ func TestGitHubActionGateway_TriggerBuild(t *testing.T) {
 
 	})
 }
+
+func TestGitHubActionGateway_BuildStatus(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	token := requireEnv(t, "GITHUB_TOKEN")
+
+	Convey("Given a GitHubActionGateway", t, func() {
+		ctx := context.Background()
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		env := mock_pipeline.NewMockGitHubActionEnv(ctrl)
+		env.EXPECT().Token().Return(token)
+
+		repo := gitfixture.PipelineRepository()
+
+		gw := NewGitHubActionGateway(ctx, env)
+
+		cases := []*struct {
+			runID  string
+			status string
+		}{
+			// buld-failed.yml, second run. SHA: 7163c77dbfb2ed57eab8de7eacc528081eb702c1
+			{runID: "145647641", status: "success"},
+			// buld-failed.yml, first run.	SHA: 6e2d4b32f1dae634a08ebe97131276d76e1b11b9
+			{runID: "145647981", status: "failed"},
+		}
+
+		for i, v := range cases {
+			var (
+				runID = v.runID
+				want  = v.status
+			)
+
+			Convey(fmt.Sprintf(
+				`Case %d, when calls BuildStatus with run ID "%s", on git-fixture-pipeline`,
+				i+1,
+				runID,
+			), func() {
+				env.EXPECT().Owner().Return(repo.Owner())
+				env.EXPECT().Repository().Return(repo.Repository())
+				got, err := gw.BuildStatus(ctx, runID)
+
+				Convey(fmt.Sprintf("Then it should return status \"%s\"", want), func() {
+					So(err, ShouldBeNil)
+					So(got, ShouldEqual, want)
+				})
+			})
+		}
+
+	})
+}
