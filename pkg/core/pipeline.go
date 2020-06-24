@@ -12,7 +12,7 @@ type PipelineGateway interface {
 
 	// start build of given project
 	// outputs build request id
-	TriggerBuild(projectName string) (string error)
+	TriggerBuild(ctx context.Context, projectName string) (string, error)
 	// get status of build identified by given build number
 	// outputs one of: success | failed | null
 	BuildStatus(buildID string) (string, error)

@@ -4,14 +4,22 @@ package pipeline
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"regexp"
 	"sort"
+	"strconv"
+	"time"
 
 	"github.com/google/go-github/v32/github"
 	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
 
 	"github.com/whatthefar/monorepo-toolkit/pkg/core"
+)
+
+const (
+	triggerBuildWaitForSecond = 5
 )
 
 type GitHubActionEnv interface {
@@ -21,6 +29,7 @@ type GitHubActionEnv interface {
 	Sha() string
 	Owner() string
 	Repository() string
+	EventType() string
 }
 
 func NewGitHubActionGateway(ctx context.Context, env GitHubActionEnv) core.PipelineGateway {
@@ -76,8 +85,64 @@ func (s *gitHubActionGateway) CurrentCommit() core.Hash {
 
 // start build of given project
 // outputs build request id
-func (s *gitHubActionGateway) TriggerBuild(projectName string) (string error) {
-	panic("not implemented") // TODO: Implement
+func (s *gitHubActionGateway) TriggerBuild(ctx context.Context, projectName string) (string, error) {
+	eventType := s.env.EventType()
+	if eventType == "" {
+		eventType = fmt.Sprintf("build-%s", projectName)
+	}
+	payload := json.RawMessage(fmt.Sprintf(`{ "job": "%s" }`, projectName))
+	opts := github.DispatchRequestOptions{
+		EventType:     eventType,
+		ClientPayload: &payload,
+	}
+	now := time.Now()
+	_, _, err := s.client.Repositories.Dispatch(ctx, s.env.Owner(), s.env.Repository(), opts)
+	if err != nil {
+		return "", errors.Wrap(err, "can't dispatch event")
+	}
+	id, err := getLastRepositoryDispatchRunID(ctx, s, projectName, now)
+	if id == 0 {
+		return "", err
+	}
+	return fmt.Sprintf("%d", id), err
+}
+
+func getLastRepositoryDispatchRunID(
+	ctx context.Context,
+	s *gitHubActionGateway,
+	projectName string,
+	now time.Time,
+) (int64, error) {
+	owner, repo := s.env.Owner(), s.env.Repository()
+	for i := 0; i < triggerBuildWaitForSecond; i++ {
+		opts := &github.ListWorkflowRunsOptions{
+			Event: "repository_dispatch",
+		}
+		workflowRuns, _, err := s.client.Actions.ListRepositoryWorkflowRuns(ctx, owner, repo, opts)
+		if err != nil {
+			return 0, errors.Wrap(err, "can't list workflow runs for a repository")
+		}
+
+		for _, run := range workflowRuns.WorkflowRuns {
+			if run.GetCreatedAt().Before(now) {
+				continue
+			}
+			runID := run.GetID()
+			jobs, _, err := s.client.Actions.ListWorkflowJobs(ctx, owner, repo, runID, nil)
+			if err != nil {
+				return 0, errors.Wrapf(err, "can't list jobs of a workflow run, ID %d", runID)
+			}
+			for _, job := range jobs.Jobs {
+				re := regexp.MustCompile(fmt.Sprintf(`%s`, projectName))
+				if re.MatchString(job.GetName()) == true {
+					return runID, nil
+				}
+			}
+		}
+
+		time.Sleep(time.Second)
+	}
+	return 0, nil
 }
 
 func getRunIDFromJobURL(url string) (int64, error) {

@@ -190,3 +190,77 @@ func TestGitHubActionGateway_CurrentCommit(t *testing.T) {
 
 	})
 }
+
+func TestGitHubActionGateway_TriggerBuild(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	token := requireEnv(t, "GITHUB_TOKEN")
+
+	Convey("Given a GitHubActionGateway", t, func() {
+		ctx := context.Background()
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		env := mock_pipeline.NewMockGitHubActionEnv(ctrl)
+		env.EXPECT().Token().Return(token)
+
+		repo := gitfixture.PipelineRepository()
+
+		gw := NewGitHubActionGateway(ctx, env)
+
+		cases := []*struct {
+			eventType      string
+			projectName    string
+			shouldReturnID bool
+			shouldError    bool
+		}{
+			{
+				eventType:      "build",
+				projectName:    "server",
+				shouldReturnID: true,
+				shouldError:    false,
+			},
+			{
+				eventType:      "nop",
+				projectName:    "server",
+				shouldReturnID: false,
+				shouldError:    false,
+			},
+		}
+
+		for i, v := range cases {
+			var (
+				eventType      = v.eventType
+				projectName    = v.projectName
+				shouldReturnID = v.shouldReturnID
+				shouldError    = v.shouldError
+			)
+
+			Convey(fmt.Sprintf(`Case %d, when calls TriggerBuild with project name "%s", on git-fixture-pipeline`, i+1, projectName), func() {
+				env.EXPECT().Owner().Return(repo.Owner())
+				env.EXPECT().Owner().Return(repo.Owner())
+				env.EXPECT().Repository().Return(repo.Repository())
+				env.EXPECT().Repository().Return(repo.Repository())
+				env.EXPECT().EventType().Return(eventType)
+				got, err := gw.TriggerBuild(ctx, projectName)
+
+				Convey(fmt.Sprintf("Then it should return build ID"), func() {
+					if shouldError == true {
+						So(err, ShouldBeError)
+					} else {
+						So(err, ShouldBeNil)
+					}
+
+					if shouldReturnID == true {
+						So(got, ShouldNotBeEmpty)
+					} else {
+						So(got, ShouldBeEmpty)
+					}
+				})
+			})
+		}
+
+	})
+}

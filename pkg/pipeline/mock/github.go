@@ -46,6 +46,20 @@ func (mr *MockGitHubActionEnvMockRecorder) Branch() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Branch", reflect.TypeOf((*MockGitHubActionEnv)(nil).Branch))
 }
 
+// EventType mocks base method
+func (m *MockGitHubActionEnv) EventType() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EventType")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// EventType indicates an expected call of EventType
+func (mr *MockGitHubActionEnvMockRecorder) EventType() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventType", reflect.TypeOf((*MockGitHubActionEnv)(nil).EventType))
+}
+
 // Owner mocks base method
 func (m *MockGitHubActionEnv) Owner() string {
 	m.ctrl.T.Helper()
