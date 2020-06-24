@@ -3,7 +3,8 @@ package gitfixture
 import "fmt"
 
 var (
-	basic *gitHubRepository = nil
+	basic    *gitHubRepository = nil
+	pipeline *gitHubRepository = nil
 )
 
 func BasicRepository() GitRepository {
@@ -11,6 +12,13 @@ func BasicRepository() GitRepository {
 		basic = &gitHubRepository{name: "WhatTheFar/monorepo-toolkit-git-fixture-basic"}
 	}
 	return basic
+}
+
+func PipelineRepository() GitRepository {
+	if pipeline == nil {
+		pipeline = &gitHubRepository{name: "WhatTheFar/monorepo-toolkit-git-fixture-pipeline"}
+	}
+	return pipeline
 }
 
 type GitRepository interface {
