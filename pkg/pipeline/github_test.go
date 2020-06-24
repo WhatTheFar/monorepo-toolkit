@@ -24,6 +24,54 @@ func requireEnv(t *testing.T, key string) string {
 	return env
 }
 
+func TestGetJobIDFromJobURL(t *testing.T) {
+	cases := []struct {
+		url         string
+		id          int64
+		shouldError bool
+	}{
+		{
+			url:         "https://api.github.com/repos/WhatTheFar/monorepo-toolkit/actions/runs/140592597/jobs",
+			id:          140592597,
+			shouldError: false,
+		},
+		{
+			url:         "https://api.github.com/repos/WhatTheFar/monorepo-toolkit/actions/runs/138239725/jobs",
+			id:          138239725,
+			shouldError: false,
+		},
+		{
+			url:         "https://api.github.com/repos/WhatTheFar/monorepo toolkit/actions/runs/138239725/jobs",
+			id:          0,
+			shouldError: true,
+		},
+		{
+			url:         "https://api.github.com/repos/WhatTheFar/monorepo-toolkit/actions/runs/invalid_id/jobs",
+			id:          0,
+			shouldError: true,
+		},
+	}
+
+	for i, v := range cases {
+		var (
+			url         = v.url
+			want        = v.id
+			shouldError = v.shouldError
+		)
+		t.Run(fmt.Sprintf("Case %d, calls getJobIDFromJobURL", i+1), func(t *testing.T) {
+			id, err := getRunIDFromJobURL(url)
+			var got int64 = id
+
+			assert.Equal(t, want, got)
+			if shouldError == true {
+				assert.NotNil(t, err)
+			} else {
+				assert.Nil(t, err)
+			}
+		})
+	}
+}
+
 func TestNewGitHubActionGateway(t *testing.T) {
 	ctx := context.Background()
 	ctrl := gomock.NewController(t)

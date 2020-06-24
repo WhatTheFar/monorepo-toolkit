@@ -4,6 +4,7 @@ package pipeline
 
 import (
 	"context"
+	"regexp"
 	"sort"
 
 	"github.com/google/go-github/v32/github"
@@ -77,6 +78,24 @@ func (s *gitHubActionGateway) CurrentCommit() core.Hash {
 // outputs build request id
 func (s *gitHubActionGateway) TriggerBuild(projectName string) (string error) {
 	panic("not implemented") // TODO: Implement
+}
+
+func getRunIDFromJobURL(url string) (int64, error) {
+	re := regexp.MustCompile(`^https://api\.github\.com/repos/[^/ ]+/[^/ ]+/actions/runs/(?P<id>\d+)/jobs$`)
+	match := re.FindStringSubmatch(url)
+	if len(match) == 0 {
+		return 0, errors.Errorf("invalid job url: %s", url)
+	}
+	for i, name := range re.SubexpNames() {
+		if name == "id" {
+			id, err := strconv.ParseInt(match[i], 10, 64)
+			if err != nil {
+				return 0, errors.Wrapf(err, "invalid job ID: %s", match[i])
+			}
+			return id, nil
+		}
+	}
+	return 0, nil
 }
 
 // get status of build identified by given build number
