@@ -12,6 +12,7 @@ import (
 
 	"github.com/whatthefar/monorepo-toolkit/pkg/core"
 	mock_pipeline "github.com/whatthefar/monorepo-toolkit/pkg/pipeline/mock"
+	gitfixture "github.com/whatthefar/monorepo-toolkit/test/git-fixtures"
 )
 
 func requireEnv(t *testing.T, key string) string {
@@ -58,6 +59,8 @@ func TestGitHubActionGateway_LastSuccesfulCommit(t *testing.T) {
 		env := mock_pipeline.NewMockGitHubActionEnv(ctrl)
 		env.EXPECT().Token().Return(token)
 
+		repo := gitfixture.PipelineRepository()
+
 		gw := NewGitHubActionGateway(ctx, env)
 
 		cases := []*struct {
@@ -82,8 +85,8 @@ func TestGitHubActionGateway_LastSuccesfulCommit(t *testing.T) {
 			)
 
 			Convey(fmt.Sprintf("Case %d, when LastSuccessfulCommit is called with workflow ID \"%s\", on git-fixture-pipeline", i+1, workflowID), func() {
-				env.EXPECT().Owner().Return("WhatTheFar")
-				env.EXPECT().Repository().Return("monorepo-toolkit-git-fixture-pipeline")
+				env.EXPECT().Owner().Return(repo.Owner())
+				env.EXPECT().Repository().Return(repo.Repository())
 				env.EXPECT().Branch().Return("master")
 				got, err := gw.LastSuccessfulCommit(ctx, workflowID)
 
