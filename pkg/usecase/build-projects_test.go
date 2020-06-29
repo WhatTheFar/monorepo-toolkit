@@ -175,6 +175,16 @@ func TestBuildProjectsUseCase(t *testing.T) {
 					presenter.EXPECT().WaitingFor(projectNames[1:]).Return()
 				}
 				presenter.EXPECT().Timeout().Return()
+				presenter.EXPECT().KillingBuildsFor(projectNames[1:]).Return()
+
+				// it should kill all running builds
+				pipeline.EXPECT().
+					KillBuild(
+						gomock.AssignableToTypeOf(ctxType),
+						gomock.Eq(buildIDs[1]),
+					).
+					Return(nil)
+				presenter.EXPECT().NotFinishedBuildsKilled().Return()
 
 				Convey("When BuildFor is called", func() {
 					uc.BuildFor(ctx, paths, workflowID)

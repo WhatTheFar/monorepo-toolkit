@@ -23,6 +23,9 @@ type BuildProjectsPresenter interface {
 	WaitingFor(projectNames []string)
 	AllBuildSucceeded()
 	Timeout()
+	KillingBuildsFor(projectNames []string)
+	KillBuildErrorFor(err error, projectName string)
+	NotFinishedBuildsKilled()
 
 	ThrowError(err error)
 }
@@ -100,9 +103,10 @@ func (uc *buildProjectsUseCase) BuildFor(ctx context.Context, paths []string, wo
 		}
 	}()
 
+	var waitingList []string
 loop:
 	for {
-		waitingList := make([]string, 0)
+		waitingList = make([]string, 0)
 		for _, s := range statuses {
 			if s.outcome == nil {
 				outcome, err := uc.pipeline.BuildStatus(ctx, s.buildID)
@@ -144,6 +148,17 @@ loop:
 	}
 
 	uc.presenter.Timeout()
-	// TODO: kill running builds
+	uc.presenter.KillingBuildsFor(waitingList)
+	for _, s := range statuses {
+		if s.outcome == nil {
+			// kill unfinished build
+			err := uc.pipeline.KillBuild(ctx, s.buildID)
+			if err != nil {
+				uc.presenter.KillBuildErrorFor(errors.Wrapf(err, `can't kill build ID "%s"`, s.buildID), s.projectName)
+				// do not return here, try to kill all build
+			}
+		}
+	}
+	uc.presenter.NotFinishedBuildsKilled()
 	return
 }

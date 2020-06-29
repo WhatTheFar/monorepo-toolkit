@@ -80,6 +80,30 @@ func (mr *MockBuildProjectsPresenterMockRecorder) BuildTriggeredFor(arg0 interfa
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildTriggeredFor", reflect.TypeOf((*MockBuildProjectsPresenter)(nil).BuildTriggeredFor), arg0)
 }
 
+// KillBuildErrorFor mocks base method
+func (m *MockBuildProjectsPresenter) KillBuildErrorFor(arg0 error, arg1 string) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "KillBuildErrorFor", arg0, arg1)
+}
+
+// KillBuildErrorFor indicates an expected call of KillBuildErrorFor
+func (mr *MockBuildProjectsPresenterMockRecorder) KillBuildErrorFor(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KillBuildErrorFor", reflect.TypeOf((*MockBuildProjectsPresenter)(nil).KillBuildErrorFor), arg0, arg1)
+}
+
+// KillingBuildsFor mocks base method
+func (m *MockBuildProjectsPresenter) KillingBuildsFor(arg0 []string) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "KillingBuildsFor", arg0)
+}
+
+// KillingBuildsFor indicates an expected call of KillingBuildsFor
+func (mr *MockBuildProjectsPresenterMockRecorder) KillingBuildsFor(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KillingBuildsFor", reflect.TypeOf((*MockBuildProjectsPresenter)(nil).KillingBuildsFor), arg0)
+}
+
 // NoBuildTriggeredFor mocks base method
 func (m *MockBuildProjectsPresenter) NoBuildTriggeredFor(arg0 string) {
 	m.ctrl.T.Helper()
@@ -90,6 +114,18 @@ func (m *MockBuildProjectsPresenter) NoBuildTriggeredFor(arg0 string) {
 func (mr *MockBuildProjectsPresenterMockRecorder) NoBuildTriggeredFor(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NoBuildTriggeredFor", reflect.TypeOf((*MockBuildProjectsPresenter)(nil).NoBuildTriggeredFor), arg0)
+}
+
+// NotFinishedBuildsKilled mocks base method
+func (m *MockBuildProjectsPresenter) NotFinishedBuildsKilled() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "NotFinishedBuildsKilled")
+}
+
+// NotFinishedBuildsKilled indicates an expected call of NotFinishedBuildsKilled
+func (mr *MockBuildProjectsPresenterMockRecorder) NotFinishedBuildsKilled() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NotFinishedBuildsKilled", reflect.TypeOf((*MockBuildProjectsPresenter)(nil).NotFinishedBuildsKilled))
 }
 
 // ThrowError mocks base method
