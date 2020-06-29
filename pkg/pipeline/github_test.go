@@ -12,6 +12,7 @@ import (
 
 	"github.com/whatthefar/monorepo-toolkit/pkg/core"
 	mock_pipeline "github.com/whatthefar/monorepo-toolkit/pkg/pipeline/mock"
+	"github.com/whatthefar/monorepo-toolkit/pkg/utils"
 	gitfixture "github.com/whatthefar/monorepo-toolkit/test/git-fixtures"
 )
 
@@ -244,7 +245,11 @@ func TestGitHubActionGateway_TriggerBuild(t *testing.T) {
 				env.EXPECT().Repository().Return(repo.Repository())
 				env.EXPECT().Repository().Return(repo.Repository())
 				env.EXPECT().EventType().Return(eventType)
-				got, err := gw.TriggerBuild(ctx, projectName)
+				var (
+					got *string
+					err error
+				)
+				got, err = gw.TriggerBuild(ctx, projectName)
 
 				Convey(fmt.Sprintf("Then it should return build ID"), func() {
 					if shouldError == true {
@@ -254,9 +259,9 @@ func TestGitHubActionGateway_TriggerBuild(t *testing.T) {
 					}
 
 					if shouldReturnID == true {
-						So(got, ShouldNotBeEmpty)
+						So(got, ShouldNotBeNil)
 					} else {
-						So(got, ShouldBeEmpty)
+						So(got, ShouldBeNil)
 					}
 				})
 			})
@@ -286,12 +291,12 @@ func TestGitHubActionGateway_BuildStatus(t *testing.T) {
 
 		cases := []*struct {
 			runID  string
-			status string
+			status *string
 		}{
 			// buld-failed.yml, second run. SHA: 7163c77dbfb2ed57eab8de7eacc528081eb702c1
-			{runID: "145647641", status: "success"},
+			{runID: "145647641", status: utils.StrAddr("success")},
 			// buld-failed.yml, first run.	SHA: 6e2d4b32f1dae634a08ebe97131276d76e1b11b9
-			{runID: "145647981", status: "failed"},
+			{runID: "145647981", status: utils.StrAddr("failed")},
 		}
 
 		for i, v := range cases {
@@ -307,11 +312,16 @@ func TestGitHubActionGateway_BuildStatus(t *testing.T) {
 			), func() {
 				env.EXPECT().Owner().Return(repo.Owner())
 				env.EXPECT().Repository().Return(repo.Repository())
-				got, err := gw.BuildStatus(ctx, runID)
+				var (
+					got *string
+					err error
+				)
+				got, err = gw.BuildStatus(ctx, runID)
 
-				Convey(fmt.Sprintf("Then it should return status \"%s\"", want), func() {
+				Convey(fmt.Sprintf("Then it should return status \"%v\"", want), func() {
 					So(err, ShouldBeNil)
-					So(got, ShouldEqual, want)
+					So(got, ShouldNotBeNil)
+					So(got, ShouldResemble, want)
 				})
 			})
 		}
@@ -348,13 +358,13 @@ func TestGitHubActionGateway_KillBulid(t *testing.T) {
 			runID, err := gw.TriggerBuild(ctx, "server")
 
 			So(err, ShouldBeNil)
-			So(runID, ShouldNotBeEmpty)
+			So(runID, ShouldNotBeNil)
 
 			Convey("When calls KillBuild with triggered run ID", func() {
 				env.EXPECT().Owner().Return(repo.Owner())
 				env.EXPECT().Repository().Return(repo.Repository())
 
-				err := gw.KillBuild(ctx, runID)
+				err := gw.KillBuild(ctx, *runID)
 
 				Convey(fmt.Sprintf("Then it should kill the run"), func() {
 					So(err, ShouldBeNil)

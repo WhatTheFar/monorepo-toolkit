@@ -16,6 +16,7 @@ import (
 	"golang.org/x/oauth2"
 
 	"github.com/whatthefar/monorepo-toolkit/pkg/core"
+	"github.com/whatthefar/monorepo-toolkit/pkg/utils"
 )
 
 const (
@@ -85,7 +86,7 @@ func (s *gitHubActionGateway) CurrentCommit() core.Hash {
 
 // start build of given project
 // outputs build request id
-func (s *gitHubActionGateway) TriggerBuild(ctx context.Context, projectName string) (string, error) {
+func (s *gitHubActionGateway) TriggerBuild(ctx context.Context, projectName string) (*string, error) {
 	eventType := s.env.EventType()
 	if eventType == "" {
 		eventType = fmt.Sprintf("build-%s", projectName)
@@ -98,13 +99,13 @@ func (s *gitHubActionGateway) TriggerBuild(ctx context.Context, projectName stri
 	now := time.Now()
 	_, _, err := s.client.Repositories.Dispatch(ctx, s.env.Owner(), s.env.Repository(), opts)
 	if err != nil {
-		return "", errors.Wrap(err, "can't dispatch event")
+		return nil, errors.Wrap(err, "can't dispatch event")
 	}
 	id, err := getLastRepositoryDispatchRunID(ctx, s, projectName, now)
-	if id == 0 {
-		return "", err
+	if id == nil {
+		return nil, err
 	}
-	return fmt.Sprintf("%d", id), err
+	return utils.StrAddr(fmt.Sprintf("%d", *id)), err
 }
 
 func getLastRepositoryDispatchRunID(
@@ -112,7 +113,7 @@ func getLastRepositoryDispatchRunID(
 	s *gitHubActionGateway,
 	projectName string,
 	now time.Time,
-) (int64, error) {
+) (*int64, error) {
 	owner, repo := s.env.Owner(), s.env.Repository()
 	for i := 0; i < triggerBuildWaitForSecond; i++ {
 		opts := &github.ListWorkflowRunsOptions{
@@ -120,7 +121,7 @@ func getLastRepositoryDispatchRunID(
 		}
 		workflowRuns, _, err := s.client.Actions.ListRepositoryWorkflowRuns(ctx, owner, repo, opts)
 		if err != nil {
-			return 0, errors.Wrap(err, "can't list workflow runs for a repository")
+			return nil, errors.Wrap(err, "can't list workflow runs for a repository")
 		}
 
 		for _, run := range workflowRuns.WorkflowRuns {
@@ -130,19 +131,19 @@ func getLastRepositoryDispatchRunID(
 			runID := run.GetID()
 			jobs, _, err := s.client.Actions.ListWorkflowJobs(ctx, owner, repo, runID, nil)
 			if err != nil {
-				return 0, errors.Wrapf(err, "can't list jobs of a workflow run, ID %d", runID)
+				return nil, errors.Wrapf(err, "can't list jobs of a workflow run, ID %d", runID)
 			}
 			for _, job := range jobs.Jobs {
 				re := regexp.MustCompile(fmt.Sprintf(`%s`, projectName))
 				if re.MatchString(job.GetName()) == true {
-					return runID, nil
+					return &runID, nil
 				}
 			}
 		}
 
 		time.Sleep(time.Second)
 	}
-	return 0, nil
+	return nil, nil
 }
 
 func getRunIDFromJobURL(url string) (int64, error) {
@@ -164,23 +165,25 @@ func getRunIDFromJobURL(url string) (int64, error) {
 }
 
 // get status of build identified by given build number
-// outputs one of: success | failed | null
-func (s *gitHubActionGateway) BuildStatus(ctx context.Context, buildID string) (string, error) {
+// outputs one of: success | failed | skipped | null
+func (s *gitHubActionGateway) BuildStatus(ctx context.Context, buildID string) (*string, error) {
 	runID, err := strconv.ParseInt(buildID, 10, 64)
 	if err != nil {
-		return "", errors.Wrapf(err, "invalid build ID: %s", buildID)
+		return nil, errors.Wrapf(err, "invalid build ID: %s", buildID)
 	}
 	workflowRun, _, err := s.client.Actions.GetWorkflowRunByID(ctx, s.env.Owner(), s.env.Repository(), runID)
 	if err != nil {
-		return "", errors.Wrapf(err, "can't get a workflow run, ID %d", runID)
+		return nil, errors.Wrapf(err, "can't get a workflow run, ID %d", runID)
 	}
 	switch workflowRun.GetConclusion() {
 	case "success":
-		return "success", nil
+		return utils.StrAddr("success"), nil
 	case "failure", "cancelled":
-		return "failed", nil
+		return utils.StrAddr("failed"), nil
+	case "skipped":
+		return utils.StrAddr("skipped"), nil
 	default:
-		return "", nil
+		return nil, nil
 	}
 }
 
