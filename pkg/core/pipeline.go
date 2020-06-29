@@ -1,3 +1,5 @@
+//go:generate mockgen -destination mock/pipeline.go . PipelineGateway
+
 package core
 
 import (

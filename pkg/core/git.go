@@ -1,3 +1,5 @@
+//go:generate mockgen -destination mock/git.go . GitGateway
+
 package core
 
 // Hash SHA1 hashed content
