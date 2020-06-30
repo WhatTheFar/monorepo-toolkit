@@ -36,6 +36,27 @@ func TestNewBuildProjectsUseCase(t *testing.T) {
 	assert.NotNil(t, ucImpl.presenter)
 }
 
+func TestNewBuildProjectsOnceUseCase(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	git := mock_core.NewMockGitGateway(ctrl)
+	pipeline := mock_core.NewMockPipelineGateway(ctrl)
+	presenter := mock_usecase.NewMockBuildProjectsPresenter(ctrl)
+	uc := NewBuildProjectsOnceUseCase(git, pipeline, presenter)
+
+	assert.Implements(t, (*BuildProjectsUseCase)(nil), uc)
+	assert.IsType(t, new(buildProjectsUseCase), uc)
+
+	ucImpl, ok := uc.(*buildProjectsUseCase)
+	assert.True(t, ok)
+
+	assert.NotNil(t, ucImpl.ListChangesUseCase)
+	assert.NotNil(t, ucImpl.iListProjects)
+	assert.NotNil(t, ucImpl.pipeline)
+	assert.NotNil(t, ucImpl.presenter)
+}
+
 func TestBuildProjectsUseCase(t *testing.T) {
 	Convey("Given a buildProjectsUseCase", t, func() {
 		ctx := context.Background()

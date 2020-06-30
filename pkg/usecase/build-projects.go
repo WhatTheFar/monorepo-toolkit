@@ -47,6 +47,33 @@ func (l *listProjects) projectsFor(paths []string) []string {
 	return projectNames
 }
 
+const (
+	joinProjectPrefix    = "|"
+	joinProjectSeparater = "|"
+	joinProjectPostfix   = "|"
+)
+
+type listProjectsAtOnce struct{}
+
+func (l *listProjectsAtOnce) projectsFor(paths []string) []string {
+	if len(paths) == 0 {
+		return []string{}
+	}
+	projectNames := make([]string, len(paths))
+	for i, path := range paths {
+		projectName := filepath.Base(path)
+		projectNames[i] = projectName
+	}
+	return []string{
+		fmt.Sprintf(
+			"%s%s%s",
+			joinProjectPrefix,
+			strings.Join(projectNames, joinProjectSeparater),
+			joinProjectPostfix,
+		),
+	}
+}
+
 type buildProjectsUseCase struct {
 	ListChangesUseCase
 	iListProjects
@@ -62,6 +89,19 @@ func NewBuildProjectsUseCase(
 	return &buildProjectsUseCase{
 		ListChangesUseCase: &listChangesUseCase{git, pipeline},
 		iListProjects:      &listProjects{},
+		pipeline:           pipeline,
+		presenter:          presenter,
+	}
+}
+
+func NewBuildProjectsOnceUseCase(
+	git core.GitGateway,
+	pipeline core.PipelineGateway,
+	presenter BuildProjectsPresenter,
+) BuildProjectsUseCase {
+	return &buildProjectsUseCase{
+		ListChangesUseCase: &listChangesUseCase{git, pipeline},
+		iListProjects:      &listProjectsAtOnce{},
 		pipeline:           pipeline,
 		presenter:          presenter,
 	}
