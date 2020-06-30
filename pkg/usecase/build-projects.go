@@ -12,7 +12,7 @@ import (
 )
 
 type BuildProjectsUseCase interface {
-	Build(ctx context.Context, paths []string, workflowID string)
+	BuildFor(ctx context.Context, paths []string, workflowID string)
 }
 
 type BuildProjectsPresenter interface {
