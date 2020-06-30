@@ -8,11 +8,33 @@ import (
 
 	"github.com/golang/mock/gomock"
 	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/assert"
 
 	mock_core "github.com/whatthefar/monorepo-toolkit/pkg/core/mock"
 	mock_usecase "github.com/whatthefar/monorepo-toolkit/pkg/usecase/mock"
 	"github.com/whatthefar/monorepo-toolkit/pkg/utils"
 )
+
+func TestNewBuildProjectsUseCase(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	git := mock_core.NewMockGitGateway(ctrl)
+	pipeline := mock_core.NewMockPipelineGateway(ctrl)
+	presenter := mock_usecase.NewMockBuildProjectsPresenter(ctrl)
+	uc := NewBuildProjectsUseCase(git, pipeline, presenter)
+
+	assert.Implements(t, (*BuildProjectsUseCase)(nil), uc)
+	assert.IsType(t, new(buildProjectsUseCase), uc)
+
+	ucImpl, ok := uc.(*buildProjectsUseCase)
+	assert.True(t, ok)
+
+	assert.NotNil(t, ucImpl.ListChangesUseCase)
+	assert.NotNil(t, ucImpl.iListProjects)
+	assert.NotNil(t, ucImpl.pipeline)
+	assert.NotNil(t, ucImpl.presenter)
+}
 
 func TestBuildProjectsUseCase(t *testing.T) {
 	Convey("Given a buildProjectsUseCase", t, func() {

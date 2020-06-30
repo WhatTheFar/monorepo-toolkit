@@ -4,7 +4,9 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -34,11 +36,35 @@ type iListProjects interface {
 	projectsFor(paths []string) []string
 }
 
+type listProjects struct{}
+
+func (l *listProjects) projectsFor(paths []string) []string {
+	projectNames := make([]string, len(paths))
+	for i, path := range paths {
+		projectName := filepath.Base(path)
+		projectNames[i] = projectName
+	}
+	return projectNames
+}
+
 type buildProjectsUseCase struct {
 	ListChangesUseCase
 	iListProjects
 	presenter BuildProjectsPresenter
 	pipeline  core.PipelineGateway
+}
+
+func NewBuildProjectsUseCase(
+	git core.GitGateway,
+	pipeline core.PipelineGateway,
+	presenter BuildProjectsPresenter,
+) BuildProjectsUseCase {
+	return &buildProjectsUseCase{
+		ListChangesUseCase: &listChangesUseCase{git, pipeline},
+		iListProjects:      &listProjects{},
+		pipeline:           pipeline,
+		presenter:          presenter,
+	}
 }
 
 type buildStatus struct {
