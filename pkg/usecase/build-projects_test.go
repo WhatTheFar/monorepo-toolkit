@@ -24,7 +24,7 @@ func TestBuildProjectsUseCase(t *testing.T) {
 
 		listChangesUc := mock_usecase.NewMockListChangesUseCase(ctrl)
 		presenter := mock_usecase.NewMockBuildProjectsPresenter(ctrl)
-		uc := &buildProjectsUseCase{listChangesUc, presenter, pipeline}
+		uc := &buildProjectsUseCase{listChangesUc, &listProjects{}, presenter, pipeline}
 
 		// reset constant to default value
 		buildMaxSeconds = buildMaxSecondsDefault

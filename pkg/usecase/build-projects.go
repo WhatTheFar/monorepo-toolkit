@@ -30,8 +30,13 @@ type BuildProjectsPresenter interface {
 	ThrowError(err error)
 }
 
+type iListProjects interface {
+	projectsFor(paths []string) []string
+}
+
 type buildProjectsUseCase struct {
 	ListChangesUseCase
+	iListProjects
 	presenter BuildProjectsPresenter
 	pipeline  core.PipelineGateway
 }
@@ -58,10 +63,10 @@ func (uc *buildProjectsUseCase) BuildFor(ctx context.Context, paths []string, wo
 		uc.presenter.ThrowError(errors.Wrapf(err, `can't list paths with changes for workflow ID "%s"`, workflowID))
 		return
 	}
+	projectNames := uc.projectsFor(paths)
 
 	statuses := make([]*buildStatus, 0)
-	for _, path := range paths {
-		projectName := filepath.Base(path)
+	for _, projectName := range projectNames {
 		buildID, err := uc.pipeline.TriggerBuild(ctx, projectName)
 		// TODO: `core` package provide behaviour checking for retrying the request
 		if err != nil {
