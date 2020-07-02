@@ -195,14 +195,13 @@ func TestBuildProjectsUseCase(t *testing.T) {
 
 					if i == 1 {
 						// no build status
-						for i := 0; i < 6; i++ {
-							pipeline.EXPECT().
-								BuildStatus(
-									gomock.AssignableToTypeOf(ctxType),
-									gomock.Eq(buildID),
-								).
-								Return(nil, nil)
-						}
+						pipeline.EXPECT().
+							BuildStatus(
+								gomock.AssignableToTypeOf(ctxType),
+								gomock.Eq(buildID),
+							).
+							Return(nil, nil).
+							MinTimes(6).MaxTimes(6)
 					} else {
 						// success build status
 						pipeline.EXPECT().
@@ -213,20 +212,21 @@ func TestBuildProjectsUseCase(t *testing.T) {
 							Return(utils.StrAddr("success"), nil)
 					}
 				}
-				for i := 0; i < 6; i++ {
-					// waiting for both project
-					presenter.EXPECT().WaitingFor(projectNames[1:]).Return()
-				}
+				// waiting for both project
+				presenter.EXPECT().WaitingFor(projectNames[1:]).Return().
+					MinTimes(6).MaxTimes(6)
+				// should timeout
 				presenter.EXPECT().Timeout().Return()
-				presenter.EXPECT().KillingBuildsFor(projectNames[1:]).Return()
 
 				// it should kill all running builds
+				presenter.EXPECT().KillingBuildsFor(projectNames[1:]).Return()
 				pipeline.EXPECT().
 					KillBuild(
 						gomock.AssignableToTypeOf(ctxType),
 						gomock.Eq(buildIDs[1]),
 					).
 					Return(nil)
+				// all running builds should have been killed
 				presenter.EXPECT().NotFinishedBuildsKilled().Return()
 
 				Convey("When BuildFor is called", func() {
