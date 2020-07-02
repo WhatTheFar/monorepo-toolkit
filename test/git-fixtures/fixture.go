@@ -17,6 +17,16 @@ func BasicRepository() GitRepository {
 	return basic
 }
 
+func BasicShallowRepository() GitRepository {
+	if shallow == nil {
+		shallow = &gitHubRepository{
+			owner:  "WhatTheFar",
+			repo:   "monorepo-toolkit-git-fixture-basic",
+		}
+	}
+	return basic
+}
+
 func PipelineRepository() GitRepository {
 	if pipeline == nil {
 		pipeline = &gitHubRepository{

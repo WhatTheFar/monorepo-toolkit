@@ -1,3 +1,7 @@
 [submodule "git-fixture-basic"]
 	path = test/git-fixtures/basic
 	url = https://github.com/WhatTheFar/monorepo-toolkit-git-fixture-basic.git
+[submodule "git-fixture-basic-shallow"]
+	path = test/git-fixtures/basic-shallow
+	url = https://github.com/WhatTheFar/monorepo-toolkit-git-fixture-basic.git
+	shallow = true
