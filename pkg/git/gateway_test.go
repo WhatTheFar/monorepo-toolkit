@@ -8,15 +8,12 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/whatthefar/monorepo-toolkit/pkg/core"
-	"github.com/whatthefar/monorepo-toolkit/test/git-fixtures"
-)
-
-const (
-	gitFixtureBasicPath = "../../test/git-fixtures/basic"
+	gitfixture "github.com/whatthefar/monorepo-toolkit/test/git-fixtures"
 )
 
 func TestNewGitGateway(t *testing.T) {
-	git, err := NewGitGateway(gitFixtureBasicPath)
+	repo := gitfixture.BasicRepository()
+	git, err := NewGitGateway(repo.WorkDir())
 
 	assert.NotNil(t, git)
 	assert.Nil(t, err)
@@ -24,7 +21,8 @@ func TestNewGitGateway(t *testing.T) {
 
 func TestGitGateway(t *testing.T) {
 	Convey("Given a basic repository", t, func() {
-		git, err := NewGitGateway(gitFixtureBasicPath)
+		repo := gitfixture.BasicRepository()
+		git, err := NewGitGateway(repo.WorkDir())
 
 		So(err, ShouldBeNil)
 
