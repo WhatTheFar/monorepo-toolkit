@@ -19,7 +19,7 @@ func TestNewGitGateway(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestGitGateway(t *testing.T) {
+func TestGitGateway_DiffNameOnly(t *testing.T) {
 	Convey("Given a basic repository", t, func() {
 		repo := gitfixture.BasicRepository()
 		git, err := NewGitGateway(repo.WorkDir())
