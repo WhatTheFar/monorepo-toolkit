@@ -19,6 +19,45 @@ func TestNewGitGateway(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestGitGateway_hasCommit(t *testing.T) {
+	Convey("Given a basic repository", t, func() {
+		repo := gitfixture.BasicRepository()
+		git, err := NewGitGateway(repo.WorkDir())
+		So(err, ShouldBeNil)
+
+		gitImpl, ok := git.(*gitGateway)
+		So(ok, ShouldBeTrue)
+
+		Convey("When calls hasCommit func with a valid SHA", func() {
+			sha := core.Hash("64bd0efceae7f8abfd675a2eaadcf3b5aa04e2b1")
+			var (
+				got bool
+				err error
+			)
+			got, err = gitImpl.hasCommit(sha)
+
+			Convey("It should return true", func() {
+				So(got, ShouldBeTrue)
+				So(err, ShouldBeNil)
+			})
+		})
+
+		Convey("When calls hasCommit func with an invalid SHA", func() {
+			sha := core.Hash("64bd0efceae7f8abfd675")
+			var (
+				got bool
+				err error
+			)
+			got, err = gitImpl.hasCommit(sha)
+
+			Convey("It should return true", func() {
+				So(got, ShouldBeFalse)
+				So(err, ShouldBeNil)
+			})
+		})
+	})
+}
+
 func TestGitGateway_DiffNameOnly(t *testing.T) {
 	Convey("Given a basic repository", t, func() {
 		repo := gitfixture.BasicRepository()

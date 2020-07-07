@@ -25,6 +25,17 @@ func NewGitGateway(path string) (core.GitGateway, error) {
 	return &gitGateway{repo: repo}, nil
 }
 
+func (g *gitGateway) hasCommit(sha core.Hash) (bool, error) {
+	_, err := g.repo.CommitObject(plumbing.NewHash(string(sha)))
+	if err != nil {
+		if err == plumbing.ErrObjectNotFound {
+			return false, nil
+		}
+		return false, errors.Wrapf(err, "can't get a commit object of %s", string(sha))
+	}
+	return true, nil
+}
+
 func (g *gitGateway) DiffNameOnly(from core.Hash, to core.Hash) ([]string, error) {
 	fromHash := plumbing.NewHash(string(from))
 	toHash := plumbing.NewHash(string(to))
