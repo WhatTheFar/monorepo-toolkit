@@ -1,6 +1,10 @@
 package git
 
 import (
+	"context"
+	"os"
+	"path/filepath"
+
 	gogit "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
@@ -10,7 +14,8 @@ import (
 )
 
 type gitGateway struct {
-	repo *gogit.Repository
+	repo    *gogit.Repository
+	workDir string
 }
 
 func NewGitGateway(path string) (core.GitGateway, error) {
@@ -22,7 +27,70 @@ func NewGitGateway(path string) (core.GitGateway, error) {
 		// unknown error
 		return nil, errors.Wrap(err, "can't open a repository")
 	}
-	return &gitGateway{repo: repo}, nil
+	return &gitGateway{repo: repo, workDir: path}, nil
+}
+
+const (
+	fetchDepthStepDefault = 5
+)
+
+var (
+	fetchDepthStep = fetchDepthStepDefault
+
+	ErrNoCommit = errors.New("no commit found")
+)
+
+func (g *gitGateway) EnsureHavingCommitFromTip(ctx context.Context, sha core.Hash) error {
+	hasCommit, err := g.hasCommit(sha)
+	if err != nil {
+		return errors.Wrapf(err, `can't check is there a commit "%s"`, sha)
+	}
+	if hasCommit == true {
+		return nil
+	}
+
+	shallows, err := g.repo.Storer.Shallow()
+	if shallows != nil {
+		remoteName := "origin"
+		remote, err := g.repo.Remote(remoteName)
+		if err != nil {
+			return errors.Wrapf(err, `can't remote "%s"`, remoteName)
+		}
+		url := remote.Config().URLs[0]
+		// TODO: implement auth for private repo
+		dotGit := filepath.Join(g.workDir, ".git")
+		err = os.RemoveAll(dotGit)
+		if err != nil {
+			return errors.Wrapf(err, `can't delete .git at "%s"`, dotGit)
+		}
+		newRepo, err := gogit.PlainCloneContext(ctx, dotGit, true, &gogit.CloneOptions{URL: url})
+		if err != nil {
+			return errors.Wrapf(err, `can't clone .git for URL "%s"`, url)
+		}
+		g.repo = newRepo
+	} else {
+		err := g.repo.FetchContext(ctx, &gogit.FetchOptions{})
+		if err != nil {
+			return errors.Wrap(err, "can't fetch")
+		}
+	}
+
+	hasCommit, err = g.hasCommit(sha)
+	if err != nil {
+		return errors.Wrapf(err, `can't check is there a commit "%s"`, sha)
+	}
+	if hasCommit != true {
+		return errors.Wrapf(ErrNoCommit, `commit "%s" not found`, sha)
+	}
+
+	return nil
+}
+
+func (g *gitGateway) IsNoCommit(err error) bool {
+	if errors.Cause(err) == ErrNoCommit {
+		return true
+	}
+	return false
 }
 
 func (g *gitGateway) hasCommit(sha core.Hash) (bool, error) {

@@ -1,9 +1,11 @@
 package git
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
+	gogit "github.com/go-git/go-git/v5"
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/assert"
 
@@ -17,6 +19,65 @@ func TestNewGitGateway(t *testing.T) {
 
 	assert.NotNil(t, git)
 	assert.Nil(t, err)
+}
+
+func TestGitGateway_Clone(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	_, err := gogit.PlainClone("shallow", false, &gogit.CloneOptions{URL: "https://github.com/WhatTheFar/monorepo-toolkit-git-fixture-basic.git", Depth: 2})
+	assert.Nil(t, err)
+	fmt.Println(err)
+}
+
+func TestGitGateway_EnsureHavingCommitFromTip(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping integration test")
+	}
+
+	Convey("Given a newly cloned basic-shallow repository", t, func() {
+		ctx := context.Background()
+		repo := gitfixture.BasicShallowRepository()
+		repo.DeleteDotGit()
+		repo.DeleteWorkDir()
+		repo.SubmoduleUpdate()
+
+		git, err := NewGitGateway(repo.WorkDir())
+
+		So(err, ShouldBeNil)
+
+		Convey("Given a fetchDepthStep set at 1", func() {
+
+			fetchDepthStep = 4
+
+			Convey("When calls EnsureHavingCommitFromTip with a valid SHA", func() {
+				sha := core.Hash("64bd0efceae7f8abfd675a2eaadcf3b5aa04e2b1")
+				var (
+					err error
+				)
+				err = git.EnsureHavingCommitFromTip(ctx, sha)
+
+				Convey("It should return OK", func() {
+					So(err, ShouldBeNil)
+				})
+			})
+
+			Convey("When calls EnsureHavingCommitFromTip with an invalid SHA", func() {
+				sha := core.Hash("64bd0efceae7f8abfd675")
+				var (
+					err error
+				)
+				err = git.EnsureHavingCommitFromTip(ctx, sha)
+				isNocommit := git.IsNoCommit(err)
+
+				Convey("It should return error, indicating no commit found", func() {
+					So(err, ShouldNotBeNil)
+					So(isNocommit, ShouldBeTrue)
+				})
+			})
+		})
+	})
 }
 
 func TestGitGateway_hasCommit(t *testing.T) {

@@ -5,6 +5,7 @@
 package mock_core
 
 import (
+	context "context"
 	gomock "github.com/golang/mock/gomock"
 	core "github.com/whatthefar/monorepo-toolkit/pkg/core"
 	reflect "reflect"
@@ -46,4 +47,32 @@ func (m *MockGitGateway) DiffNameOnly(arg0, arg1 core.Hash) ([]string, error) {
 func (mr *MockGitGatewayMockRecorder) DiffNameOnly(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DiffNameOnly", reflect.TypeOf((*MockGitGateway)(nil).DiffNameOnly), arg0, arg1)
+}
+
+// EnsureHavingCommitFromTip mocks base method
+func (m *MockGitGateway) EnsureHavingCommitFromTip(arg0 context.Context, arg1 core.Hash) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EnsureHavingCommitFromTip", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// EnsureHavingCommitFromTip indicates an expected call of EnsureHavingCommitFromTip
+func (mr *MockGitGatewayMockRecorder) EnsureHavingCommitFromTip(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureHavingCommitFromTip", reflect.TypeOf((*MockGitGateway)(nil).EnsureHavingCommitFromTip), arg0, arg1)
+}
+
+// IsNoCommit mocks base method
+func (m *MockGitGateway) IsNoCommit(arg0 error) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsNoCommit", arg0)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsNoCommit indicates an expected call of IsNoCommit
+func (mr *MockGitGatewayMockRecorder) IsNoCommit(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsNoCommit", reflect.TypeOf((*MockGitGateway)(nil).IsNoCommit), arg0)
 }
