@@ -50,7 +50,7 @@ func BasicShallowRepository() GitRepository {
 			submodule: "git-fixture-basic-shallow",
 		}
 	}
-	return basic
+	return shallow
 }
 
 func PipelineRepository() GitRepository {
