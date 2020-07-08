@@ -127,8 +127,7 @@ func (r *gitHubRepository) SubmoduleUpdate() {
 	cmd := exec.
 		Command("git", "submodule", "update", r.relDir)
 	cmd.Dir = getRootDir()
-	output, err := cmd.Output()
-	fmt.Println(string(output))
+	_, err := cmd.Output()
 	if err != nil {
 		panic(err)
 	}
