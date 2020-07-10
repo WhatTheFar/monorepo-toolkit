@@ -21,7 +21,7 @@ func TestNewBuildProjectsInteractor(t *testing.T) {
 
 	git := mock_core.NewMockGitGateway(ctrl)
 	pipeline := mock_core.NewMockPipelineGateway(ctrl)
-	presenter := mock_interactor.NewMockBuildProjectsPresenter(ctrl)
+	presenter := mock_interactor.NewMockBuildProjectsOutput(ctrl)
 	interactor := NewBuildProjectsInteractor(git, pipeline, presenter)
 
 	assert.Implements(t, (*BuildProjectsInteractor)(nil), interactor)
@@ -42,7 +42,7 @@ func TestNewBuildProjectsOnceInteractor(t *testing.T) {
 
 	git := mock_core.NewMockGitGateway(ctrl)
 	pipeline := mock_core.NewMockPipelineGateway(ctrl)
-	presenter := mock_interactor.NewMockBuildProjectsPresenter(ctrl)
+	presenter := mock_interactor.NewMockBuildProjectsOutput(ctrl)
 	interactor := NewBuildProjectsOnceInteractor(git, pipeline, presenter)
 
 	assert.Implements(t, (*BuildProjectsInteractor)(nil), interactor)
@@ -66,7 +66,7 @@ func TestBuildProjectsInteractor(t *testing.T) {
 		pipeline := mock_core.NewMockPipelineGateway(ctrl)
 
 		listChangesUc := mock_interactor.NewMockListChangesInteractor(ctrl)
-		presenter := mock_interactor.NewMockBuildProjectsPresenter(ctrl)
+		presenter := mock_interactor.NewMockBuildProjectsOutput(ctrl)
 		interactor := &buildProjectsInteractor{listChangesUc, &listProjects{}, presenter, pipeline}
 
 		// reset constant to default value

@@ -1,4 +1,4 @@
-//go:generate mockgen -destination mock/build-projects.go . BuildProjectsPresenter
+//go:generate mockgen -destination mock/build-projects.go . BuildProjectsOutput
 
 package usecase
 
@@ -17,7 +17,7 @@ type BuildProjectsInteractor interface {
 	BuildFor(ctx context.Context, paths []string, workflowID string)
 }
 
-type BuildProjectsPresenter interface {
+type BuildProjectsOutput interface {
 	BuildTriggeredFor(projectName string)
 	NoBuildTriggeredFor(projectName string)
 	BuildFailedFor(projectName string)
@@ -77,14 +77,14 @@ func (l *listProjectsAtOnce) projectsFor(paths []string) []string {
 type buildProjectsInteractor struct {
 	ListChangesInteractor
 	iListProjects
-	presenter BuildProjectsPresenter
+	presenter BuildProjectsOutput
 	pipeline  core.PipelineGateway
 }
 
 func NewBuildProjectsInteractor(
 	git core.GitGateway,
 	pipeline core.PipelineGateway,
-	presenter BuildProjectsPresenter,
+	presenter BuildProjectsOutput,
 ) BuildProjectsInteractor {
 	return &buildProjectsInteractor{
 		ListChangesInteractor: &listChangesInteractor{git, pipeline},
@@ -97,7 +97,7 @@ func NewBuildProjectsInteractor(
 func NewBuildProjectsOnceInteractor(
 	git core.GitGateway,
 	pipeline core.PipelineGateway,
-	presenter BuildProjectsPresenter,
+	presenter BuildProjectsOutput,
 ) BuildProjectsInteractor {
 	return &buildProjectsInteractor{
 		ListChangesInteractor: &listChangesInteractor{git, pipeline},
