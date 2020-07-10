@@ -44,6 +44,12 @@ func TestListChangesUseCase(t *testing.T) {
 				CurrentCommit().
 				Return(currentCommit)
 			git.EXPECT().
+				EnsureHavingCommitFromTip(
+					gomock.AssignableToTypeOf(ctxType),
+					gomock.Eq(lastCommit),
+				).
+				Return(nil)
+			git.EXPECT().
 				DiffNameOnly(
 					gomock.Eq(lastCommit),
 					gomock.Eq(currentCommit),

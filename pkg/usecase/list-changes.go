@@ -27,6 +27,9 @@ func (uc *listChangesUseCase) ListChanges(ctx context.Context, paths []string, w
 		return nil, errors.Wrapf(err, "can't get last succesful commit for workflow ID %s", workflowID)
 	}
 	currentCommit := uc.pipeline.CurrentCommit()
+	// Since a local git repository might be a shallow clone,
+	// we have to ensure there is enough information for listing changes.
+	uc.git.EnsureHavingCommitFromTip(ctx, lastCommit)
 
 	changes, err := uc.git.DiffNameOnly(core.Hash(lastCommit), core.Hash(currentCommit))
 
