@@ -1,4 +1,4 @@
-package interactor
+package interactor_impl
 
 import (
 	"context"

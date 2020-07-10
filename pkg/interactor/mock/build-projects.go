@@ -6,7 +6,9 @@ package mock_interactor
 
 import (
 	gomock "github.com/golang/mock/gomock"
+	interactor "github.com/whatthefar/monorepo-toolkit/pkg/interactor"
 	reflect "reflect"
+	time "time"
 )
 
 // MockBuildProjectsOutput is a mock of BuildProjectsOutput interface
@@ -33,27 +35,27 @@ func (m *MockBuildProjectsOutput) EXPECT() *MockBuildProjectsOutputMockRecorder 
 }
 
 // AllBuildSucceeded mocks base method
-func (m *MockBuildProjectsOutput) AllBuildSucceeded() {
+func (m *MockBuildProjectsOutput) AllBuildSucceeded(arg0 []string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "AllBuildSucceeded")
+	m.ctrl.Call(m, "AllBuildSucceeded", arg0)
 }
 
 // AllBuildSucceeded indicates an expected call of AllBuildSucceeded
-func (mr *MockBuildProjectsOutputMockRecorder) AllBuildSucceeded() *gomock.Call {
+func (mr *MockBuildProjectsOutputMockRecorder) AllBuildSucceeded(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AllBuildSucceeded", reflect.TypeOf((*MockBuildProjectsOutput)(nil).AllBuildSucceeded))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AllBuildSucceeded", reflect.TypeOf((*MockBuildProjectsOutput)(nil).AllBuildSucceeded), arg0)
 }
 
 // BuildFailedFor mocks base method
-func (m *MockBuildProjectsOutput) BuildFailedFor(arg0 string) {
+func (m *MockBuildProjectsOutput) BuildFailedFor(arg0, arg1 string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "BuildFailedFor", arg0)
+	m.ctrl.Call(m, "BuildFailedFor", arg0, arg1)
 }
 
 // BuildFailedFor indicates an expected call of BuildFailedFor
-func (mr *MockBuildProjectsOutputMockRecorder) BuildFailedFor(arg0 interface{}) *gomock.Call {
+func (mr *MockBuildProjectsOutputMockRecorder) BuildFailedFor(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildFailedFor", reflect.TypeOf((*MockBuildProjectsOutput)(nil).BuildFailedFor), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildFailedFor", reflect.TypeOf((*MockBuildProjectsOutput)(nil).BuildFailedFor), arg0, arg1)
 }
 
 // BuildSkippedFor mocks base method
@@ -69,39 +71,39 @@ func (mr *MockBuildProjectsOutputMockRecorder) BuildSkippedFor(arg0 interface{})
 }
 
 // BuildTriggeredFor mocks base method
-func (m *MockBuildProjectsOutput) BuildTriggeredFor(arg0 string) {
+func (m *MockBuildProjectsOutput) BuildTriggeredFor(arg0, arg1 string) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "BuildTriggeredFor", arg0)
+	m.ctrl.Call(m, "BuildTriggeredFor", arg0, arg1)
 }
 
 // BuildTriggeredFor indicates an expected call of BuildTriggeredFor
-func (mr *MockBuildProjectsOutputMockRecorder) BuildTriggeredFor(arg0 interface{}) *gomock.Call {
+func (mr *MockBuildProjectsOutputMockRecorder) BuildTriggeredFor(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildTriggeredFor", reflect.TypeOf((*MockBuildProjectsOutput)(nil).BuildTriggeredFor), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildTriggeredFor", reflect.TypeOf((*MockBuildProjectsOutput)(nil).BuildTriggeredFor), arg0, arg1)
 }
 
-// KillBuildErrorFor mocks base method
-func (m *MockBuildProjectsOutput) KillBuildErrorFor(arg0 error, arg1 string) {
+// KillBuildError mocks base method
+func (m *MockBuildProjectsOutput) KillBuildError(arg0 string, arg1 error) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "KillBuildErrorFor", arg0, arg1)
+	m.ctrl.Call(m, "KillBuildError", arg0, arg1)
 }
 
-// KillBuildErrorFor indicates an expected call of KillBuildErrorFor
-func (mr *MockBuildProjectsOutputMockRecorder) KillBuildErrorFor(arg0, arg1 interface{}) *gomock.Call {
+// KillBuildError indicates an expected call of KillBuildError
+func (mr *MockBuildProjectsOutputMockRecorder) KillBuildError(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KillBuildErrorFor", reflect.TypeOf((*MockBuildProjectsOutput)(nil).KillBuildErrorFor), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KillBuildError", reflect.TypeOf((*MockBuildProjectsOutput)(nil).KillBuildError), arg0, arg1)
 }
 
-// KillingBuildsFor mocks base method
-func (m *MockBuildProjectsOutput) KillingBuildsFor(arg0 []string) {
+// KillingBuilds mocks base method
+func (m *MockBuildProjectsOutput) KillingBuilds(arg0 []*interactor.BuildInfo) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "KillingBuildsFor", arg0)
+	m.ctrl.Call(m, "KillingBuilds", arg0)
 }
 
-// KillingBuildsFor indicates an expected call of KillingBuildsFor
-func (mr *MockBuildProjectsOutputMockRecorder) KillingBuildsFor(arg0 interface{}) *gomock.Call {
+// KillingBuilds indicates an expected call of KillingBuilds
+func (mr *MockBuildProjectsOutputMockRecorder) KillingBuilds(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KillingBuildsFor", reflect.TypeOf((*MockBuildProjectsOutput)(nil).KillingBuildsFor), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KillingBuilds", reflect.TypeOf((*MockBuildProjectsOutput)(nil).KillingBuilds), arg0)
 }
 
 // NoBuildTriggeredFor mocks base method
@@ -141,19 +143,19 @@ func (mr *MockBuildProjectsOutputMockRecorder) ThrowError(arg0 interface{}) *gom
 }
 
 // Timeout mocks base method
-func (m *MockBuildProjectsOutput) Timeout() {
+func (m *MockBuildProjectsOutput) Timeout(arg0 time.Duration) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Timeout")
+	m.ctrl.Call(m, "Timeout", arg0)
 }
 
 // Timeout indicates an expected call of Timeout
-func (mr *MockBuildProjectsOutputMockRecorder) Timeout() *gomock.Call {
+func (mr *MockBuildProjectsOutputMockRecorder) Timeout(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Timeout", reflect.TypeOf((*MockBuildProjectsOutput)(nil).Timeout))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Timeout", reflect.TypeOf((*MockBuildProjectsOutput)(nil).Timeout), arg0)
 }
 
 // WaitingFor mocks base method
-func (m *MockBuildProjectsOutput) WaitingFor(arg0 []string) {
+func (m *MockBuildProjectsOutput) WaitingFor(arg0 []*interactor.BuildInfo) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "WaitingFor", arg0)
 }

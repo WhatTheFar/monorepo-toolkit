@@ -1,4 +1,4 @@
-package interactor
+package interactor_impl
 
 import (
 	"context"
@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	mock_core "github.com/whatthefar/monorepo-toolkit/pkg/core/mock"
+	. "github.com/whatthefar/monorepo-toolkit/pkg/interactor"
 	mock_interactor "github.com/whatthefar/monorepo-toolkit/pkg/interactor/mock"
 	"github.com/whatthefar/monorepo-toolkit/pkg/utils"
 )
@@ -97,7 +98,7 @@ func TestBuildProjectsInteractor(t *testing.T) {
 							gomock.Eq(name),
 						).
 						Return(utils.StrAddr(buildID), nil)
-					presenter.EXPECT().BuildTriggeredFor(name).Return()
+					presenter.EXPECT().BuildTriggeredFor(name, buildID).Return()
 
 					pipeline.EXPECT().
 						BuildStatus(
@@ -106,7 +107,7 @@ func TestBuildProjectsInteractor(t *testing.T) {
 						).
 						Return(utils.StrAddr("success"), nil)
 				}
-				presenter.EXPECT().AllBuildSucceeded()
+				presenter.EXPECT().AllBuildSucceeded(projectNames)
 
 				Convey("When BuildFor is called", func() {
 					interactor.BuildFor(ctx, paths, workflowID)
@@ -126,7 +127,7 @@ func TestBuildProjectsInteractor(t *testing.T) {
 							gomock.Eq(name),
 						).
 						Return(utils.StrAddr(buildID), nil)
-					presenter.EXPECT().BuildTriggeredFor(name).Return()
+					presenter.EXPECT().BuildTriggeredFor(name, buildID).Return()
 
 					if i == 1 {
 						// fail build status
@@ -136,7 +137,7 @@ func TestBuildProjectsInteractor(t *testing.T) {
 								gomock.Eq(buildID),
 							).
 							Return(utils.StrAddr("failed"), nil)
-						presenter.EXPECT().BuildFailedFor(name)
+						presenter.EXPECT().BuildFailedFor(name, buildID)
 					} else {
 						// success build status
 						pipeline.EXPECT().
@@ -168,7 +169,7 @@ func TestBuildProjectsInteractor(t *testing.T) {
 						Return(nil, nil)
 					presenter.EXPECT().NoBuildTriggeredFor(name).Return()
 				}
-				presenter.EXPECT().AllBuildSucceeded().Return()
+				presenter.EXPECT().AllBuildSucceeded(projectNames).Return()
 
 				Convey("When BuildFor is called", func() {
 					interactor.BuildFor(ctx, paths, workflowID)
@@ -191,7 +192,7 @@ func TestBuildProjectsInteractor(t *testing.T) {
 							gomock.Eq(name),
 						).
 						Return(utils.StrAddr(buildID), nil)
-					presenter.EXPECT().BuildTriggeredFor(name).Return()
+					presenter.EXPECT().BuildTriggeredFor(name, buildID).Return()
 
 					if i == 1 {
 						// no build status
@@ -213,13 +214,14 @@ func TestBuildProjectsInteractor(t *testing.T) {
 					}
 				}
 				// waiting for both project
-				presenter.EXPECT().WaitingFor(projectNames[1:]).Return().
+				infos := []*BuildInfo{{ProjectName: projectNames[1], BuildID: buildIDs[1]}}
+				presenter.EXPECT().WaitingFor(infos).Return().
 					MinTimes(6).MaxTimes(6)
 				// should timeout
-				presenter.EXPECT().Timeout().Return()
+				presenter.EXPECT().Timeout(buildMaxSeconds).Return()
 
 				// it should kill all running builds
-				presenter.EXPECT().KillingBuildsFor(projectNames[1:]).Return()
+				presenter.EXPECT().KillingBuilds(infos).Return()
 				pipeline.EXPECT().
 					KillBuild(
 						gomock.AssignableToTypeOf(ctxType),
