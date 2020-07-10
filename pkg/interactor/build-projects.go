@@ -13,7 +13,7 @@ import (
 	"github.com/whatthefar/monorepo-toolkit/pkg/core"
 )
 
-type BuildProjectsUseCase interface {
+type BuildProjectsInteractor interface {
 	BuildFor(ctx context.Context, paths []string, workflowID string)
 }
 
@@ -74,36 +74,36 @@ func (l *listProjectsAtOnce) projectsFor(paths []string) []string {
 	}
 }
 
-type buildProjectsUseCase struct {
-	ListChangesUseCase
+type buildProjectsInteractor struct {
+	ListChangesInteractor
 	iListProjects
 	presenter BuildProjectsPresenter
 	pipeline  core.PipelineGateway
 }
 
-func NewBuildProjectsUseCase(
+func NewBuildProjectsInteractor(
 	git core.GitGateway,
 	pipeline core.PipelineGateway,
 	presenter BuildProjectsPresenter,
-) BuildProjectsUseCase {
-	return &buildProjectsUseCase{
-		ListChangesUseCase: &listChangesUseCase{git, pipeline},
-		iListProjects:      &listProjects{},
-		pipeline:           pipeline,
-		presenter:          presenter,
+) BuildProjectsInteractor {
+	return &buildProjectsInteractor{
+		ListChangesInteractor: &listChangesInteractor{git, pipeline},
+		iListProjects:         &listProjects{},
+		pipeline:              pipeline,
+		presenter:             presenter,
 	}
 }
 
-func NewBuildProjectsOnceUseCase(
+func NewBuildProjectsOnceInteractor(
 	git core.GitGateway,
 	pipeline core.PipelineGateway,
 	presenter BuildProjectsPresenter,
-) BuildProjectsUseCase {
-	return &buildProjectsUseCase{
-		ListChangesUseCase: &listChangesUseCase{git, pipeline},
-		iListProjects:      &listProjectsAtOnce{},
-		pipeline:           pipeline,
-		presenter:          presenter,
+) BuildProjectsInteractor {
+	return &buildProjectsInteractor{
+		ListChangesInteractor: &listChangesInteractor{git, pipeline},
+		iListProjects:         &listProjectsAtOnce{},
+		pipeline:              pipeline,
+		presenter:             presenter,
 	}
 }
 
@@ -123,26 +123,26 @@ var (
 	buildCheckAfterSeconds = buildCheckAfterSecondsDefault
 )
 
-func (uc *buildProjectsUseCase) BuildFor(ctx context.Context, paths []string, workflowID string) {
-	paths, err := uc.ListChanges(ctx, paths, workflowID)
+func (interactor *buildProjectsInteractor) BuildFor(ctx context.Context, paths []string, workflowID string) {
+	paths, err := interactor.ListChanges(ctx, paths, workflowID)
 	if err != nil {
-		uc.presenter.ThrowError(errors.Wrapf(err, `can't list paths with changes for workflow ID "%s"`, workflowID))
+		interactor.presenter.ThrowError(errors.Wrapf(err, `can't list paths with changes for workflow ID "%s"`, workflowID))
 		return
 	}
-	projectNames := uc.projectsFor(paths)
+	projectNames := interactor.projectsFor(paths)
 
 	statuses := make([]*buildStatus, 0)
 	for _, projectName := range projectNames {
-		buildID, err := uc.pipeline.TriggerBuild(ctx, projectName)
+		buildID, err := interactor.pipeline.TriggerBuild(ctx, projectName)
 		// TODO: `core` package provide behaviour checking for retrying the request
 		if err != nil {
-			uc.presenter.ThrowError(errors.Wrapf(err, `can't trigger build for project "%s"`, projectName))
+			interactor.presenter.ThrowError(errors.Wrapf(err, `can't trigger build for project "%s"`, projectName))
 			return
 		}
 		if buildID == nil {
-			uc.presenter.NoBuildTriggeredFor(projectName)
+			interactor.presenter.NoBuildTriggeredFor(projectName)
 		} else {
-			uc.presenter.BuildTriggeredFor(projectName)
+			interactor.presenter.BuildTriggeredFor(projectName)
 			status := &buildStatus{
 				projectName: projectName,
 				buildID:     *buildID,
@@ -153,7 +153,7 @@ func (uc *buildProjectsUseCase) BuildFor(ctx context.Context, paths []string, wo
 	}
 
 	if len(statuses) == 0 {
-		uc.presenter.AllBuildSucceeded()
+		interactor.presenter.AllBuildSucceeded()
 		return
 	}
 
@@ -180,10 +180,10 @@ loop:
 		waitingList = make([]string, 0)
 		for _, s := range statuses {
 			if s.outcome == nil {
-				outcome, err := uc.pipeline.BuildStatus(ctx, s.buildID)
+				outcome, err := interactor.pipeline.BuildStatus(ctx, s.buildID)
 				// TODO: `core` package provide behaviour checking for retrying the request
 				if err != nil {
-					uc.presenter.ThrowError(errors.Wrapf(err, `can't get build status for build ID "%s"`, s.buildID))
+					interactor.presenter.ThrowError(errors.Wrapf(err, `can't get build status for build ID "%s"`, s.buildID))
 					return
 				}
 				s.outcome = outcome
@@ -192,9 +192,9 @@ loop:
 					switch *s.outcome {
 					case "success":
 					case "skipped":
-						uc.presenter.BuildSkippedFor(s.projectName)
+						interactor.presenter.BuildSkippedFor(s.projectName)
 					case "failed":
-						uc.presenter.BuildFailedFor(s.projectName)
+						interactor.presenter.BuildFailedFor(s.projectName)
 						return
 					default:
 						panic("unknown build status, this should not occur")
@@ -205,9 +205,9 @@ loop:
 			}
 		}
 		if len(waitingList) > 0 {
-			uc.presenter.WaitingFor(waitingList)
+			interactor.presenter.WaitingFor(waitingList)
 		} else {
-			uc.presenter.AllBuildSucceeded()
+			interactor.presenter.AllBuildSucceeded()
 			return
 		}
 		select {
@@ -218,18 +218,18 @@ loop:
 		}
 	}
 
-	uc.presenter.Timeout()
-	uc.presenter.KillingBuildsFor(waitingList)
+	interactor.presenter.Timeout()
+	interactor.presenter.KillingBuildsFor(waitingList)
 	for _, s := range statuses {
 		if s.outcome == nil {
 			// kill unfinished build
-			err := uc.pipeline.KillBuild(ctx, s.buildID)
+			err := interactor.pipeline.KillBuild(ctx, s.buildID)
 			if err != nil {
-				uc.presenter.KillBuildErrorFor(errors.Wrapf(err, `can't kill build ID "%s"`, s.buildID), s.projectName)
+				interactor.presenter.KillBuildErrorFor(errors.Wrapf(err, `can't kill build ID "%s"`, s.buildID), s.projectName)
 				// do not return here, try to kill all build
 			}
 		}
 	}
-	uc.presenter.NotFinishedBuildsKilled()
+	interactor.presenter.NotFinishedBuildsKilled()
 	return
 }

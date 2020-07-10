@@ -11,63 +11,63 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	mock_core "github.com/whatthefar/monorepo-toolkit/pkg/core/mock"
-	mock_usecase "github.com/whatthefar/monorepo-toolkit/pkg/usecase/mock"
+	mock_interactor "github.com/whatthefar/monorepo-toolkit/pkg/interactor/mock"
 	"github.com/whatthefar/monorepo-toolkit/pkg/utils"
 )
 
-func TestNewBuildProjectsUseCase(t *testing.T) {
+func TestNewBuildProjectsInteractor(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	git := mock_core.NewMockGitGateway(ctrl)
 	pipeline := mock_core.NewMockPipelineGateway(ctrl)
-	presenter := mock_usecase.NewMockBuildProjectsPresenter(ctrl)
-	uc := NewBuildProjectsUseCase(git, pipeline, presenter)
+	presenter := mock_interactor.NewMockBuildProjectsPresenter(ctrl)
+	interactor := NewBuildProjectsInteractor(git, pipeline, presenter)
 
-	assert.Implements(t, (*BuildProjectsUseCase)(nil), uc)
-	assert.IsType(t, new(buildProjectsUseCase), uc)
+	assert.Implements(t, (*BuildProjectsInteractor)(nil), interactor)
+	assert.IsType(t, new(buildProjectsInteractor), interactor)
 
-	ucImpl, ok := uc.(*buildProjectsUseCase)
+	impl, ok := interactor.(*buildProjectsInteractor)
 	assert.True(t, ok)
 
-	assert.NotNil(t, ucImpl.ListChangesUseCase)
-	assert.NotNil(t, ucImpl.iListProjects)
-	assert.NotNil(t, ucImpl.pipeline)
-	assert.NotNil(t, ucImpl.presenter)
+	assert.NotNil(t, impl.ListChangesInteractor)
+	assert.NotNil(t, impl.iListProjects)
+	assert.NotNil(t, impl.pipeline)
+	assert.NotNil(t, impl.presenter)
 }
 
-func TestNewBuildProjectsOnceUseCase(t *testing.T) {
+func TestNewBuildProjectsOnceInteractor(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	git := mock_core.NewMockGitGateway(ctrl)
 	pipeline := mock_core.NewMockPipelineGateway(ctrl)
-	presenter := mock_usecase.NewMockBuildProjectsPresenter(ctrl)
-	uc := NewBuildProjectsOnceUseCase(git, pipeline, presenter)
+	presenter := mock_interactor.NewMockBuildProjectsPresenter(ctrl)
+	interactor := NewBuildProjectsOnceInteractor(git, pipeline, presenter)
 
-	assert.Implements(t, (*BuildProjectsUseCase)(nil), uc)
-	assert.IsType(t, new(buildProjectsUseCase), uc)
+	assert.Implements(t, (*BuildProjectsInteractor)(nil), interactor)
+	assert.IsType(t, new(buildProjectsInteractor), interactor)
 
-	ucImpl, ok := uc.(*buildProjectsUseCase)
+	impl, ok := interactor.(*buildProjectsInteractor)
 	assert.True(t, ok)
 
-	assert.NotNil(t, ucImpl.ListChangesUseCase)
-	assert.NotNil(t, ucImpl.iListProjects)
-	assert.NotNil(t, ucImpl.pipeline)
-	assert.NotNil(t, ucImpl.presenter)
+	assert.NotNil(t, impl.ListChangesInteractor)
+	assert.NotNil(t, impl.iListProjects)
+	assert.NotNil(t, impl.pipeline)
+	assert.NotNil(t, impl.presenter)
 }
 
-func TestBuildProjectsUseCase(t *testing.T) {
-	Convey("Given a buildProjectsUseCase", t, func() {
+func TestBuildProjectsInteractor(t *testing.T) {
+	Convey("Given a buildProjectsInteractor", t, func() {
 		ctx := context.Background()
 		ctrl := gomock.NewController(t)
 		// defer ctrl.Finish()
 
 		pipeline := mock_core.NewMockPipelineGateway(ctrl)
 
-		listChangesUc := mock_usecase.NewMockListChangesUseCase(ctrl)
-		presenter := mock_usecase.NewMockBuildProjectsPresenter(ctrl)
-		uc := &buildProjectsUseCase{listChangesUc, &listProjects{}, presenter, pipeline}
+		listChangesUc := mock_interactor.NewMockListChangesInteractor(ctrl)
+		presenter := mock_interactor.NewMockBuildProjectsPresenter(ctrl)
+		interactor := &buildProjectsInteractor{listChangesUc, &listProjects{}, presenter, pipeline}
 
 		// reset constant to default value
 		buildMaxSeconds = buildMaxSecondsDefault
@@ -109,7 +109,7 @@ func TestBuildProjectsUseCase(t *testing.T) {
 				presenter.EXPECT().AllBuildSucceeded()
 
 				Convey("When BuildFor is called", func() {
-					uc.BuildFor(ctx, paths, workflowID)
+					interactor.BuildFor(ctx, paths, workflowID)
 
 					Convey("All expectaton should pass", func() {
 						ctrl.Finish()
@@ -149,7 +149,7 @@ func TestBuildProjectsUseCase(t *testing.T) {
 				}
 
 				Convey("When BuildFor is called", func() {
-					uc.BuildFor(ctx, paths, workflowID)
+					interactor.BuildFor(ctx, paths, workflowID)
 
 					Convey("All expectaton should pass", func() {
 						ctrl.Finish()
@@ -171,7 +171,7 @@ func TestBuildProjectsUseCase(t *testing.T) {
 				presenter.EXPECT().AllBuildSucceeded().Return()
 
 				Convey("When BuildFor is called", func() {
-					uc.BuildFor(ctx, paths, workflowID)
+					interactor.BuildFor(ctx, paths, workflowID)
 
 					Convey("All expectaton should pass", func() {
 						ctrl.Finish()
@@ -230,7 +230,7 @@ func TestBuildProjectsUseCase(t *testing.T) {
 				presenter.EXPECT().NotFinishedBuildsKilled().Return()
 
 				Convey("When BuildFor is called", func() {
-					uc.BuildFor(ctx, paths, workflowID)
+					interactor.BuildFor(ctx, paths, workflowID)
 
 					Convey("All expectaton should pass", func() {
 						ctrl.Finish()

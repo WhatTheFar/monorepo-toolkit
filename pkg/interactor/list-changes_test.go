@@ -18,8 +18,8 @@ const (
 	gitFixtureBasicPath = "../../test/git-fixtures/basic"
 )
 
-func TestListChangesUseCase(t *testing.T) {
-	Convey("Given a listChangesUseCase", t, func() {
+func TestListChangesInteractor(t *testing.T) {
+	Convey("Given a listChangesInteractor", t, func() {
 		ctx := context.Background()
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -27,7 +27,7 @@ func TestListChangesUseCase(t *testing.T) {
 		git := mock_core.NewMockGitGateway(ctrl)
 		pipeline := mock_core.NewMockPipelineGateway(ctrl)
 
-		uc := &listChangesUseCase{git, pipeline}
+		interactor := &listChangesInteractor{git, pipeline}
 
 		Convey("When calls Execute", func() {
 			paths := []string{"services/app1"}
@@ -64,7 +64,7 @@ func TestListChangesUseCase(t *testing.T) {
 				"services/app1",
 			}
 
-			got, err := uc.ListChanges(ctx, paths, workflowID)
+			got, err := interactor.ListChanges(ctx, paths, workflowID)
 
 			So(err, ShouldBeNil)
 			So(got, ShouldResemble, want)

@@ -1,4 +1,4 @@
-//go:generate mockgen -destination mock/list-changes.go . ListChangesUseCase
+//go:generate mockgen -destination mock/list-changes.go . ListChangesInteractor
 
 package usecase
 
@@ -12,26 +12,26 @@ import (
 	"github.com/whatthefar/monorepo-toolkit/pkg/core"
 )
 
-type ListChangesUseCase interface {
+type ListChangesInteractor interface {
 	ListChanges(ctx context.Context, paths []string, workflowID string) ([]string, error)
 }
 
-type listChangesUseCase struct {
+type listChangesInteractor struct {
 	git      core.GitGateway
 	pipeline core.PipelineGateway
 }
 
-func (uc *listChangesUseCase) ListChanges(ctx context.Context, paths []string, workflowID string) ([]string, error) {
-	lastCommit, err := uc.pipeline.LastSuccessfulCommit(ctx, workflowID)
+func (interactor *listChangesInteractor) ListChanges(ctx context.Context, paths []string, workflowID string) ([]string, error) {
+	lastCommit, err := interactor.pipeline.LastSuccessfulCommit(ctx, workflowID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "can't get last succesful commit for workflow ID %s", workflowID)
 	}
-	currentCommit := uc.pipeline.CurrentCommit()
+	currentCommit := interactor.pipeline.CurrentCommit()
 	// Since a local git repository might be a shallow clone,
 	// we have to ensure there is enough information for listing changes.
-	uc.git.EnsureHavingCommitFromTip(ctx, lastCommit)
+	interactor.git.EnsureHavingCommitFromTip(ctx, lastCommit)
 
-	changes, err := uc.git.DiffNameOnly(core.Hash(lastCommit), core.Hash(currentCommit))
+	changes, err := interactor.git.DiffNameOnly(core.Hash(lastCommit), core.Hash(currentCommit))
 
 	return filterOnlyPathsWithChanges(paths, changes), nil
 }
