@@ -1,6 +1,6 @@
 //go:generate mockgen -destination mock/build-projects.go . BuildProjectsOutput
 
-package usecase
+package interactor
 
 import (
 	"context"

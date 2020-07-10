@@ -1,6 +1,6 @@
 //go:generate mockgen -destination mock/list-changes.go . ListChangesInteractor
 
-package usecase
+package interactor
 
 import (
 	"context"
