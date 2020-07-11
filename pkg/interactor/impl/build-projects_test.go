@@ -32,43 +32,26 @@ func TestNewBuildProjectsInteractor(t *testing.T) {
 	assert.True(t, ok)
 
 	assert.NotNil(t, impl.ListChangesInteractor)
-	assert.NotNil(t, impl.iListProjects)
-	assert.NotNil(t, impl.pipeline)
 	assert.NotNil(t, impl.presenter)
-}
-
-func TestNewBuildProjectsOnceInteractor(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	git := mock_core.NewMockGitGateway(ctrl)
-	pipeline := mock_core.NewMockPipelineGateway(ctrl)
-	presenter := mock_interactor.NewMockBuildProjectsOutput(ctrl)
-	interactor := NewBuildProjectsOnceInteractor(git, pipeline, presenter)
-
-	assert.Implements(t, (*BuildProjectsInteractor)(nil), interactor)
-	assert.IsType(t, new(buildProjectsInteractor), interactor)
-
-	impl, ok := interactor.(*buildProjectsInteractor)
-	assert.True(t, ok)
-
-	assert.NotNil(t, impl.ListChangesInteractor)
-	assert.NotNil(t, impl.iListProjects)
+	assert.Equal(t, presenter, impl.presenter)
 	assert.NotNil(t, impl.pipeline)
-	assert.NotNil(t, impl.presenter)
+	assert.Equal(t, pipeline, impl.pipeline)
 }
 
 func TestBuildProjectsInteractor(t *testing.T) {
 	Convey("Given a buildProjectsInteractor", t, func() {
 		ctx := context.Background()
 		ctrl := gomock.NewController(t)
-		// defer ctrl.Finish()
 
 		pipeline := mock_core.NewMockPipelineGateway(ctrl)
 
 		listChangesUc := mock_interactor.NewMockListChangesInteractor(ctrl)
 		presenter := mock_interactor.NewMockBuildProjectsOutput(ctrl)
-		interactor := &buildProjectsInteractor{listChangesUc, &listProjects{}, presenter, pipeline}
+		interactor := &buildProjectsInteractor{
+			ListChangesInteractor: listChangesUc,
+			presenter:             presenter,
+			pipeline:              pipeline,
+		}
 
 		// reset constant to default value
 		buildMaxSeconds = buildMaxSecondsDefault
@@ -110,7 +93,7 @@ func TestBuildProjectsInteractor(t *testing.T) {
 				presenter.EXPECT().AllBuildSucceeded(projectNames)
 
 				Convey("When BuildFor is called", func() {
-					interactor.BuildFor(ctx, paths, workflowID)
+					interactor.BuildPaths(ctx, paths, workflowID)
 
 					Convey("All expectaton should pass", func() {
 						ctrl.Finish()
@@ -150,7 +133,7 @@ func TestBuildProjectsInteractor(t *testing.T) {
 				}
 
 				Convey("When BuildFor is called", func() {
-					interactor.BuildFor(ctx, paths, workflowID)
+					interactor.BuildPaths(ctx, paths, workflowID)
 
 					Convey("All expectaton should pass", func() {
 						ctrl.Finish()
@@ -172,7 +155,7 @@ func TestBuildProjectsInteractor(t *testing.T) {
 				presenter.EXPECT().AllBuildSucceeded(projectNames).Return()
 
 				Convey("When BuildFor is called", func() {
-					interactor.BuildFor(ctx, paths, workflowID)
+					interactor.BuildPaths(ctx, paths, workflowID)
 
 					Convey("All expectaton should pass", func() {
 						ctrl.Finish()
@@ -232,7 +215,7 @@ func TestBuildProjectsInteractor(t *testing.T) {
 				presenter.EXPECT().NotFinishedBuildsKilled().Return()
 
 				Convey("When BuildFor is called", func() {
-					interactor.BuildFor(ctx, paths, workflowID)
+					interactor.BuildPaths(ctx, paths, workflowID)
 
 					Convey("All expectaton should pass", func() {
 						ctrl.Finish()

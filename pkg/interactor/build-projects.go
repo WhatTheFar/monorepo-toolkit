@@ -8,7 +8,8 @@ import (
 )
 
 type BuildProjectsInteractor interface {
-	BuildFor(ctx context.Context, paths []string, workflowID string)
+	BuildPaths(ctx context.Context, paths []string, workflowID string)
+	BuildPathsOnce(ctx context.Context, paths []string, workflowID string)
 }
 
 type BuildInfo struct {
