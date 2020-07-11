@@ -65,12 +65,12 @@ func TestBuildProjectsInteractor(t *testing.T) {
 			ctxType := reflect.TypeOf((*context.Context)(nil)).Elem()
 
 			listChangesUc.EXPECT().
-				ListChanges(
+				ListProjects(
 					gomock.AssignableToTypeOf(ctxType),
 					gomock.Eq(paths),
 					gomock.Eq(workflowID),
 				).
-				Return(paths, nil)
+				Return(projectNames, nil)
 
 			Convey("Setup successful builds", func() {
 				for i, name := range projectNames {

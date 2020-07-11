@@ -47,3 +47,33 @@ func (mr *MockListChangesInteractorMockRecorder) ListChanges(arg0, arg1, arg2 in
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListChanges", reflect.TypeOf((*MockListChangesInteractor)(nil).ListChanges), arg0, arg1, arg2)
 }
+
+// ListProjects mocks base method
+func (m *MockListChangesInteractor) ListProjects(arg0 context.Context, arg1 []string, arg2 string) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListProjects", arg0, arg1, arg2)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListProjects indicates an expected call of ListProjects
+func (mr *MockListChangesInteractorMockRecorder) ListProjects(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListProjects", reflect.TypeOf((*MockListChangesInteractor)(nil).ListProjects), arg0, arg1, arg2)
+}
+
+// ListProjectsJoined mocks base method
+func (m *MockListChangesInteractor) ListProjectsJoined(arg0 context.Context, arg1 []string, arg2 string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListProjectsJoined", arg0, arg1, arg2)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListProjectsJoined indicates an expected call of ListProjectsJoined
+func (mr *MockListChangesInteractorMockRecorder) ListProjectsJoined(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListProjectsJoined", reflect.TypeOf((*MockListChangesInteractor)(nil).ListProjectsJoined), arg0, arg1, arg2)
+}

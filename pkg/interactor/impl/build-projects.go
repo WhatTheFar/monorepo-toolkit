@@ -2,9 +2,6 @@ package interactor_impl
 
 import (
 	"context"
-	"fmt"
-	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/pkg/errors"
@@ -31,49 +28,21 @@ type buildProjectsInteractor struct {
 }
 
 func (it *buildProjectsInteractor) BuildPaths(ctx context.Context, paths []string, workflowID string) {
-	paths, err := it.ListChanges(ctx, paths, workflowID)
+	projectNames, err := it.ListProjects(ctx, paths, workflowID)
 	if err != nil {
-		it.presenter.ThrowError(errors.Wrapf(err, `can't list paths with changes for workflow ID "%s"`, workflowID))
+		it.presenter.ThrowError(errors.Wrapf(err, `can't list projects to build for workflow ID "%s"`, workflowID))
 		return
 	}
-	projectNames := it.projectsNameFor(paths)
 	it.buildFor(ctx, projectNames)
 }
-
-const (
-	joinProjectPrefix    = "|"
-	joinProjectSeparater = "|"
-	joinProjectPostfix   = "|"
-)
 
 func (it *buildProjectsInteractor) BuildPathsOnce(ctx context.Context, paths []string, workflowID string) {
-	paths, err := it.ListChanges(ctx, paths, workflowID)
+	projectNamesJoined, err := it.ListProjectsJoined(ctx, paths, workflowID)
 	if err != nil {
-		it.presenter.ThrowError(errors.Wrapf(err, `can't list paths with changes for workflow ID "%s"`, workflowID))
+		it.presenter.ThrowError(errors.Wrapf(err, `can't list projects to build for workflow ID "%s"`, workflowID))
 		return
 	}
-	projectNames := it.projectsNameFor(paths)
-	projectNames = []string{
-		fmt.Sprintf(
-			"%s%s%s",
-			joinProjectPrefix,
-			strings.Join(projectNames, joinProjectSeparater),
-			joinProjectPostfix,
-		),
-	}
-	it.buildFor(ctx, projectNames)
-}
-
-func (it *buildProjectsInteractor) projectsNameFor(paths []string) []string {
-	if len(paths) == 0 {
-		return []string{}
-	}
-	projectNames := make([]string, len(paths))
-	for i, path := range paths {
-		projectName := filepath.Base(path)
-		projectNames[i] = projectName
-	}
-	return projectNames
+	it.buildFor(ctx, []string{projectNamesJoined})
 }
 
 const (

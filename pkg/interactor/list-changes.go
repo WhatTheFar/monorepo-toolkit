@@ -7,5 +7,7 @@ import (
 )
 
 type ListChangesInteractor interface {
-	ListChanges(ctx context.Context, paths []string, workflowID string) ([]string, error)
+	ListChanges(ctx context.Context, paths []string, workflowID string) (changedPaths []string, err error)
+	ListProjects(ctx context.Context, paths []string, workflowID string) (projectNames []string, err error)
+	ListProjectsJoined(ctx context.Context, paths []string, workflowID string) (projectName string, err error)
 }
