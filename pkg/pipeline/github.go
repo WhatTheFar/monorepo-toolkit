@@ -34,17 +34,20 @@ type GitHubActionEnv interface {
 }
 
 func NewGitHubActionGateway(ctx context.Context, env GitHubActionEnv) core.PipelineGateway {
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: env.Token()},
-	)
-	tc := oauth2.NewClient(ctx, ts)
-	client := github.NewClient(tc)
-	return &gitHubActionGateway{client: client, env: env}
+	return &gitHubActionGateway{env: env}
 }
 
 type gitHubActionGateway struct {
-	client *github.Client
-	env    GitHubActionEnv
+	env GitHubActionEnv
+}
+
+func (s *gitHubActionGateway) client(ctx context.Context) *github.Client {
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{AccessToken: s.env.Token()},
+	)
+	tc := oauth2.NewClient(ctx, ts)
+	client := github.NewClient(tc)
+	return client
 }
 
 // get hash of last succesfull build commit only commits of 'build' job are considered
