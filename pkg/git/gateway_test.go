@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"testing"
 
-	gogit "github.com/go-git/go-git/v5"
 	. "github.com/smartystreets/goconvey/convey"
 	"github.com/stretchr/testify/assert"
 
@@ -19,16 +18,6 @@ func TestNewGitGateway(t *testing.T) {
 
 	assert.NotNil(t, git)
 	assert.Nil(t, err)
-}
-
-func TestGitGateway_Clone(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping integration test")
-	}
-
-	_, err := gogit.PlainClone("shallow", false, &gogit.CloneOptions{URL: "https://github.com/WhatTheFar/monorepo-toolkit-git-fixture-basic.git", Depth: 2})
-	assert.Nil(t, err)
-	fmt.Println(err)
 }
 
 func TestGitGateway_EnsureHavingCommitFromTip(t *testing.T) {
