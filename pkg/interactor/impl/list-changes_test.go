@@ -12,11 +12,32 @@ import (
 
 	"github.com/whatthefar/monorepo-toolkit/pkg/core"
 	mock_core "github.com/whatthefar/monorepo-toolkit/pkg/core/mock"
+	. "github.com/whatthefar/monorepo-toolkit/pkg/interactor"
 )
 
 const (
 	gitFixtureBasicPath = "../../test/git-fixtures/basic"
 )
+
+func TestNewListChnagesInteractor(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	git := mock_core.NewMockGitGateway(ctrl)
+	pipeline := mock_core.NewMockPipelineGateway(ctrl)
+	interactor := NewListChangesInteractor(git, pipeline)
+
+	assert.Implements(t, (*ListChangesInteractor)(nil), interactor)
+	assert.IsType(t, new(listChangesInteractor), interactor)
+
+	impl, ok := interactor.(*listChangesInteractor)
+	assert.True(t, ok)
+
+	assert.NotNil(t, impl.git)
+	assert.Equal(t, git, impl.git)
+	assert.NotNil(t, impl.pipeline)
+	assert.Equal(t, pipeline, impl.pipeline)
+}
 
 func TestListChangesInteractor(t *testing.T) {
 	Convey("Given a listChangesInteractor", t, func() {

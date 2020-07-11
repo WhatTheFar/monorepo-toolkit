@@ -8,7 +8,12 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/whatthefar/monorepo-toolkit/pkg/core"
+	. "github.com/whatthefar/monorepo-toolkit/pkg/interactor"
 )
+
+func NewListChangesInteractor(git core.GitGateway, pipeline core.PipelineGateway) ListChangesInteractor {
+	return &listChangesInteractor{git: git, pipeline: pipeline}
+}
 
 type listChangesInteractor struct {
 	git      core.GitGateway
