@@ -36,34 +36,29 @@ func TestGitGateway_EnsureHavingCommitFromTip(t *testing.T) {
 
 		So(err, ShouldBeNil)
 
-		Convey("Given a fetchDepthStep set at 1", func() {
+		Convey("When calls EnsureHavingCommitFromTip with a valid SHA", func() {
+			sha := core.Hash("64bd0efceae7f8abfd675a2eaadcf3b5aa04e2b1")
+			var (
+				err error
+			)
+			err = git.EnsureHavingCommitFromTip(ctx, sha)
 
-			fetchDepthStep = 4
-
-			Convey("When calls EnsureHavingCommitFromTip with a valid SHA", func() {
-				sha := core.Hash("64bd0efceae7f8abfd675a2eaadcf3b5aa04e2b1")
-				var (
-					err error
-				)
-				err = git.EnsureHavingCommitFromTip(ctx, sha)
-
-				Convey("It should return OK", func() {
-					So(err, ShouldBeNil)
-				})
+			Convey("It should return OK", func() {
+				So(err, ShouldBeNil)
 			})
+		})
 
-			Convey("When calls EnsureHavingCommitFromTip with an invalid SHA", func() {
-				sha := core.Hash("64bd0efceae7f8abfd675")
-				var (
-					err error
-				)
-				err = git.EnsureHavingCommitFromTip(ctx, sha)
-				isNocommit := git.IsNoCommit(err)
+		Convey("When calls EnsureHavingCommitFromTip with an invalid SHA", func() {
+			sha := core.Hash("64bd0efceae7f8abfd675")
+			var (
+				err error
+			)
+			err = git.EnsureHavingCommitFromTip(ctx, sha)
+			isNocommit := git.IsNoCommit(err)
 
-				Convey("It should return error, indicating no commit found", func() {
-					So(err, ShouldNotBeNil)
-					So(isNocommit, ShouldBeTrue)
-				})
+			Convey("It should return error, indicating no commit found", func() {
+				So(err, ShouldNotBeNil)
+				So(isNocommit, ShouldBeTrue)
 			})
 		})
 	})

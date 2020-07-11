@@ -30,13 +30,7 @@ func NewGitGateway(path string) (core.GitGateway, error) {
 	return &gitGateway{repo: repo, workDir: path}, nil
 }
 
-const (
-	fetchDepthStepDefault = 5
-)
-
 var (
-	fetchDepthStep = fetchDepthStepDefault
-
 	ErrNoCommit = errors.New("no commit found")
 )
 
