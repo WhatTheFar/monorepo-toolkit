@@ -74,14 +74,12 @@ func TestGetJobIDFromJobURL(t *testing.T) {
 }
 
 func TestNewGitHubActionGateway(t *testing.T) {
-	ctx := context.Background()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	env := mock_pipeline.NewMockGitHubActionEnv(ctrl)
-	env.EXPECT().Token().Return("github_personal_access_token")
 
-	gw := NewGitHubActionGateway(ctx, env)
+	gw := NewGitHubActionGateway(env)
 
 	assert.Implements(t, (*core.PipelineGateway)(nil), gw)
 	assert.IsType(t, new(gitHubActionGateway), gw)
@@ -89,8 +87,8 @@ func TestNewGitHubActionGateway(t *testing.T) {
 	ghImpl, ok := gw.(*gitHubActionGateway)
 	assert.True(t, ok)
 
-	assert.NotNil(t, ghImpl.client)
 	assert.NotNil(t, ghImpl.env)
+	assert.Equal(t, env, ghImpl.env)
 }
 
 func TestGitHubActionGateway_LastSuccesfulCommit(t *testing.T) {
@@ -110,7 +108,7 @@ func TestGitHubActionGateway_LastSuccesfulCommit(t *testing.T) {
 
 		repo := gitfixture.PipelineRepository()
 
-		gw := NewGitHubActionGateway(ctx, env)
+		gw := NewGitHubActionGateway(env)
 
 		cases := []*struct {
 			workflowID string
@@ -154,17 +152,13 @@ func TestGitHubActionGateway_CurrentCommit(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 
-	token := requireEnv(t, "GITHUB_TOKEN")
-
 	Convey("Given a GitHubActionGateway", t, func() {
-		ctx := context.Background()
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		env := mock_pipeline.NewMockGitHubActionEnv(ctrl)
-		env.EXPECT().Token().Return(token)
 
-		gw := NewGitHubActionGateway(ctx, env)
+		gw := NewGitHubActionGateway(env)
 
 		cases := []*struct {
 			sha string
@@ -205,11 +199,11 @@ func TestGitHubActionGateway_TriggerBuild(t *testing.T) {
 		defer ctrl.Finish()
 
 		env := mock_pipeline.NewMockGitHubActionEnv(ctrl)
-		env.EXPECT().Token().Return(token)
+		env.EXPECT().Token().Return(token).AnyTimes()
 
 		repo := gitfixture.PipelineRepository()
 
-		gw := NewGitHubActionGateway(ctx, env)
+		gw := NewGitHubActionGateway(env)
 
 		cases := []*struct {
 			eventType      string
@@ -240,10 +234,8 @@ func TestGitHubActionGateway_TriggerBuild(t *testing.T) {
 			)
 
 			Convey(fmt.Sprintf(`Case %d, when calls TriggerBuild with project name "%s", on git-fixture-pipeline`, i+1, projectName), func() {
-				env.EXPECT().Owner().Return(repo.Owner())
-				env.EXPECT().Owner().Return(repo.Owner())
-				env.EXPECT().Repository().Return(repo.Repository())
-				env.EXPECT().Repository().Return(repo.Repository())
+				env.EXPECT().Owner().Return(repo.Owner()).AnyTimes()
+				env.EXPECT().Repository().Return(repo.Repository()).AnyTimes()
 				env.EXPECT().EventType().Return(eventType)
 				var (
 					got *string
@@ -287,7 +279,7 @@ func TestGitHubActionGateway_BuildStatus(t *testing.T) {
 
 		repo := gitfixture.PipelineRepository()
 
-		gw := NewGitHubActionGateway(ctx, env)
+		gw := NewGitHubActionGateway(env)
 
 		cases := []*struct {
 			runID  string
@@ -342,9 +334,9 @@ func TestGitHubActionGateway_KillBulid(t *testing.T) {
 		ctrl := gomock.NewController(t)
 
 		env := mock_pipeline.NewMockGitHubActionEnv(ctrl)
-		env.EXPECT().Token().Return(token)
+		env.EXPECT().Token().Return(token).AnyTimes()
 
-		gw := NewGitHubActionGateway(ctx, env)
+		gw := NewGitHubActionGateway(env)
 
 		Convey("Given a build was triggered via TriggerBuild, on git-fixture-pipeline", func() {
 			env.EXPECT().Owner().Return(repo.Owner()).MinTimes(1)
@@ -365,7 +357,7 @@ func TestGitHubActionGateway_KillBulid(t *testing.T) {
 				env := mock_pipeline.NewMockGitHubActionEnv(ctrl)
 				env.EXPECT().Token().Return(token)
 
-				gw := NewGitHubActionGateway(ctx, env)
+				gw := NewGitHubActionGateway(env)
 
 				Convey("When calls KillBuild with triggered run ID", func() {
 					env.EXPECT().Owner().Return(repo.Owner())

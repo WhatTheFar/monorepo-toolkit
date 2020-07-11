@@ -33,7 +33,7 @@ type GitHubActionEnv interface {
 	EventType() string
 }
 
-func NewGitHubActionGateway(ctx context.Context, env GitHubActionEnv) core.PipelineGateway {
+func NewGitHubActionGateway(env GitHubActionEnv) core.PipelineGateway {
 	return &gitHubActionGateway{env: env}
 }
 
@@ -58,7 +58,7 @@ func (s *gitHubActionGateway) LastSuccessfulCommit(
 	opts := &github.ListWorkflowRunsOptions{
 		Branch: s.env.Branch(),
 	}
-	workflowRuns, _, err := s.client.Actions.ListWorkflowRunsByFileName(
+	workflowRuns, _, err := s.client(ctx).Actions.ListWorkflowRunsByFileName(
 		ctx,
 		s.env.Owner(),
 		s.env.Repository(),
@@ -90,6 +90,7 @@ func (s *gitHubActionGateway) CurrentCommit() core.Hash {
 // start build of given project
 // outputs build request id
 func (s *gitHubActionGateway) TriggerBuild(ctx context.Context, projectName string) (*string, error) {
+	client := s.client(ctx)
 	eventType := s.env.EventType()
 	if eventType == "" {
 		eventType = fmt.Sprintf("build-%s", projectName)
@@ -100,29 +101,29 @@ func (s *gitHubActionGateway) TriggerBuild(ctx context.Context, projectName stri
 		ClientPayload: &payload,
 	}
 	now := time.Now()
-	_, _, err := s.client.Repositories.Dispatch(ctx, s.env.Owner(), s.env.Repository(), opts)
+	_, _, err := client.Repositories.Dispatch(ctx, s.env.Owner(), s.env.Repository(), opts)
 	if err != nil {
 		return nil, errors.Wrap(err, "can't dispatch event")
 	}
-	id, err := getLastRepositoryDispatchRunID(ctx, s, projectName, now)
+	id, err := s.getLastRepositoryDispatchRunID(ctx, projectName, now)
 	if id == nil {
 		return nil, err
 	}
 	return utils.StrAddr(fmt.Sprintf("%d", *id)), err
 }
 
-func getLastRepositoryDispatchRunID(
+func (s *gitHubActionGateway) getLastRepositoryDispatchRunID(
 	ctx context.Context,
-	s *gitHubActionGateway,
 	projectName string,
 	now time.Time,
 ) (*int64, error) {
+	client := s.client(ctx)
 	owner, repo := s.env.Owner(), s.env.Repository()
 	for i := 0; i < triggerBuildWaitForSecond; i++ {
 		opts := &github.ListWorkflowRunsOptions{
 			Event: "repository_dispatch",
 		}
-		workflowRuns, _, err := s.client.Actions.ListRepositoryWorkflowRuns(ctx, owner, repo, opts)
+		workflowRuns, _, err := client.Actions.ListRepositoryWorkflowRuns(ctx, owner, repo, opts)
 		if err != nil {
 			return nil, errors.Wrap(err, "can't list workflow runs for a repository")
 		}
@@ -132,7 +133,7 @@ func getLastRepositoryDispatchRunID(
 				continue
 			}
 			runID := run.GetID()
-			jobs, _, err := s.client.Actions.ListWorkflowJobs(ctx, owner, repo, runID, nil)
+			jobs, _, err := client.Actions.ListWorkflowJobs(ctx, owner, repo, runID, nil)
 			if err != nil {
 				return nil, errors.Wrapf(err, "can't list jobs of a workflow run, ID %d", runID)
 			}
@@ -174,7 +175,7 @@ func (s *gitHubActionGateway) BuildStatus(ctx context.Context, buildID string) (
 	if err != nil {
 		return nil, errors.Wrapf(err, "invalid build ID: %s", buildID)
 	}
-	workflowRun, _, err := s.client.Actions.GetWorkflowRunByID(ctx, s.env.Owner(), s.env.Repository(), runID)
+	workflowRun, _, err := s.client(ctx).Actions.GetWorkflowRunByID(ctx, s.env.Owner(), s.env.Repository(), runID)
 	if err != nil {
 		return nil, errors.Wrapf(err, "can't get a workflow run, ID %d", runID)
 	}
@@ -196,7 +197,7 @@ func (s *gitHubActionGateway) KillBuild(ctx context.Context, buildID string) err
 	if err != nil {
 		return errors.Wrapf(err, "invalid build ID: %s", buildID)
 	}
-	resp, err := s.client.Actions.CancelWorkflowRunByID(ctx, s.env.Owner(), s.env.Repository(), runID)
+	resp, err := s.client(ctx).Actions.CancelWorkflowRunByID(ctx, s.env.Owner(), s.env.Repository(), runID)
 	// go-github considers 202 Accepted status codes as an AcceptedError
 	// so, instead of checking if there is an error, we have to handle the response manually
 	if resp.StatusCode == 202 {
