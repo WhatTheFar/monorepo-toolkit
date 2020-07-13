@@ -9,8 +9,6 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-
-	"github.com/whatthefar/monorepo-toolkit/pkg/factory"
 )
 
 func newListCmdFlag() *listCmdFlag {
@@ -58,8 +56,6 @@ var (
 	listProjectsCmd *cobra.Command
 
 	listCmdViper = viper.New()
-
-	ciControllerFactory = factory.CIController
 )
 
 func (b *commandsBuilder) newListCmd() *baseCmd {
