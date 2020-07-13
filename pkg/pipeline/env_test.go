@@ -46,26 +46,14 @@ func TestNewGitHubActionEnv(t *testing.T) {
 				isValid:    true,
 			},
 			{
-				env: map[string]string{
-					GITHUB_TOKEN:      "1234567890",
-					GITHUB_REF:        "refs/heads/master",
-					GITHUB_SHA:        "0770df1c082d9e0e3aaf1a32ad65d8b5006964f6",
-					GITHUB_REPOSITORY: "WhatTheFar/monorepo-toolkit",
-					// no event type
-				},
-				branch:     "master",
-				owner:      "WhatTheFar",
-				repository: "monorepo-toolkit",
-				isValid:    true,
-			},
-			{
 				// try another combination of env values
 				env: map[string]string{
 					GITHUB_TOKEN: "0987654321",
 					GITHUB_REF:   "refs/heads/develop",
 					// missing GITHUB_SHA
+					GITHUB_SHA:        "",
 					GITHUB_REPOSITORY: "whatthefar/monorepo-toolkit-git-fixture-basic",
-					// no event type
+					GITHUB_EVENT_TYPE: "",
 				},
 				branch:     "develop",
 				owner:      "whatthefar",
@@ -75,10 +63,11 @@ func TestNewGitHubActionEnv(t *testing.T) {
 			{
 				env: map[string]string{
 					// missing GITHUB_TOKEN
+					GITHUB_TOKEN:      "",
 					GITHUB_REF:        "refs/heads/master",
 					GITHUB_SHA:        "0770df1c082d9e0e3aaf1a32ad65d8b5006964f6",
 					GITHUB_REPOSITORY: "WhatTheFar/monorepo-toolkit",
-					// no event type
+					GITHUB_EVENT_TYPE: "",
 				},
 				branch:     "master",
 				owner:      "WhatTheFar",
@@ -87,11 +76,11 @@ func TestNewGitHubActionEnv(t *testing.T) {
 			},
 			{
 				env: map[string]string{
-					GITHUB_TOKEN: "1234567890",
-					// missing GITHUB_REF
+					GITHUB_TOKEN:      "1234567890",
+					GITHUB_REF:        "",
 					GITHUB_SHA:        "0770df1c082d9e0e3aaf1a32ad65d8b5006964f6",
 					GITHUB_REPOSITORY: "WhatTheFar/monorepo-toolkit",
-					// no event type
+					GITHUB_EVENT_TYPE: "",
 				},
 				branch:     "",
 				owner:      "WhatTheFar",
@@ -100,11 +89,11 @@ func TestNewGitHubActionEnv(t *testing.T) {
 			},
 			{
 				env: map[string]string{
-					GITHUB_TOKEN: "1234567890",
-					GITHUB_REF:   "refs/heads/master",
-					GITHUB_SHA:   "0770df1c082d9e0e3aaf1a32ad65d8b5006964f6",
-					// missing GITHUB_REPOSITORY
-					// no event type
+					GITHUB_TOKEN:      "1234567890",
+					GITHUB_REF:        "refs/heads/master",
+					GITHUB_SHA:        "0770df1c082d9e0e3aaf1a32ad65d8b5006964f6",
+					GITHUB_REPOSITORY: "",
+					GITHUB_EVENT_TYPE: "",
 				},
 				branch:     "master",
 				owner:      "",
