@@ -1,3 +1,5 @@
+//go:generate mockgen -destination mock/ci.go . CI
+
 package controller
 
 import (
