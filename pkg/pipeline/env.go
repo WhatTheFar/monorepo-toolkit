@@ -1,8 +1,10 @@
 package pipeline
 
 import (
+	"fmt"
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
 
@@ -38,6 +40,30 @@ type gitHubActionEnv struct {
 	GitHubEventType  string `mapstructure:"GITHUB_EVENT_TYPE"`
 }
 
+func (e *gitHubActionEnv) Validate() error {
+	missing := make([]string, 0)
+	if e.GitHubToken == "" {
+		missing = append(missing, "GITHUB_TOKEN")
+	}
+	if e.GitHubRef == "" {
+		missing = append(missing, "GITHUB_REF")
+	}
+	if e.GitHubSha == "" {
+		missing = append(missing, "GITHUB_SHA")
+	}
+	if e.GitHubRepository == "" {
+		missing = append(missing, "GITHUB_REPOSITORY")
+	}
+	if len(missing) > 0 {
+		for i, v := range missing {
+			missing[i] = fmt.Sprintf(`"%s"`, v)
+		}
+		joined := strings.Join(missing, ", ")
+		return errors.Errorf("required environment varaible(s) %s not set", joined)
+	}
+	return nil
+}
+
 func (e *gitHubActionEnv) Token() string {
 	return e.GitHubToken
 }
@@ -56,11 +82,17 @@ func (e *gitHubActionEnv) Sha() string {
 }
 
 func (e *gitHubActionEnv) Owner() string {
+	if e.GitHubRepository == "" {
+		return ""
+	}
 	s := strings.Split(e.GitHubRepository, gitHubRepositorySeparator)
 	return s[len(s)-2]
 }
 
 func (e *gitHubActionEnv) Repository() string {
+	if e.GitHubRepository == "" {
+		return ""
+	}
 	s := strings.Split(e.GitHubRepository, gitHubRepositorySeparator)
 	return s[len(s)-1]
 }

@@ -24,6 +24,7 @@ const (
 )
 
 type GitHubActionEnv interface {
+	Validate() error
 	Token() string
 	Ref() string
 	Branch() string

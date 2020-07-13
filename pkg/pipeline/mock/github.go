@@ -129,3 +129,17 @@ func (mr *MockGitHubActionEnvMockRecorder) Token() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Token", reflect.TypeOf((*MockGitHubActionEnv)(nil).Token))
 }
+
+// Validate mocks base method
+func (m *MockGitHubActionEnv) Validate() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Validate")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Validate indicates an expected call of Validate
+func (mr *MockGitHubActionEnvMockRecorder) Validate() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Validate", reflect.TypeOf((*MockGitHubActionEnv)(nil).Validate))
+}
