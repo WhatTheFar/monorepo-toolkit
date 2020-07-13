@@ -36,6 +36,7 @@ type commandsBuilder struct {
 func (b *commandsBuilder) addAll() *commandsBuilder {
 	b.addCommands(
 		b.newListCmd(),
+		b.newBuildCmd(),
 	)
 	return b
 }

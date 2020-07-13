@@ -33,6 +33,34 @@ func (m *MockCI) EXPECT() *MockCIMockRecorder {
 	return m.recorder
 }
 
+// Build mocks base method
+func (m *MockCI) Build(arg0 context.Context, arg1 []string, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Build", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Build indicates an expected call of Build
+func (mr *MockCIMockRecorder) Build(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Build", reflect.TypeOf((*MockCI)(nil).Build), arg0, arg1, arg2)
+}
+
+// BuildOnce mocks base method
+func (m *MockCI) BuildOnce(arg0 context.Context, arg1 []string, arg2 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BuildOnce", arg0, arg1, arg2)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BuildOnce indicates an expected call of BuildOnce
+func (mr *MockCIMockRecorder) BuildOnce(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildOnce", reflect.TypeOf((*MockCI)(nil).BuildOnce), arg0, arg1, arg2)
+}
+
 // ListProjects mocks base method
 func (m *MockCI) ListProjects(arg0 context.Context, arg1 []string, arg2 string) ([]string, error) {
 	m.ctrl.T.Helper()

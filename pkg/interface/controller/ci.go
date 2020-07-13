@@ -12,6 +12,9 @@ import (
 )
 
 type CI interface {
+	Build(ctx context.Context, paths []string, workflowID string) error
+	BuildOnce(ctx context.Context, paths []string, workflowID string) error
+
 	ListProjects(ctx context.Context, paths []string, workflowID string) ([]string, error)
 	ListProjectsJoined(ctx context.Context, paths []string, workflowID string) (string, error)
 }
@@ -29,6 +32,27 @@ func NewCIController(
 type ci struct {
 	interactor.ListChangesInteractor
 	interactor.BuildProjectsInteractor
+}
+
+func (c *ci) Build(ctx context.Context, paths []string, workflowID string) error {
+	workDir, err := os.Getwd()
+	if err != nil {
+		return errors.Wrap(err, "can't get current directory")
+	}
+
+	paths = relPathsIfPossible(workDir, paths)
+	c.BuildPaths(ctx, paths, workflowID)
+	return nil
+}
+func (c *ci) BuildOnce(ctx context.Context, paths []string, workflowID string) error {
+	workDir, err := os.Getwd()
+	if err != nil {
+		return errors.Wrap(err, "can't get current directory")
+	}
+
+	paths = relPathsIfPossible(workDir, paths)
+	c.BuildPaths(ctx, paths, workflowID)
+	return nil
 }
 
 func (c *ci) ListProjects(ctx context.Context, paths []string, workflowID string) ([]string, error) {
