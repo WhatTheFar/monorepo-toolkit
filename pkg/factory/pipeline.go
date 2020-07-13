@@ -1,9 +1,9 @@
 package factory
 
 import (
-	"errors"
 	"fmt"
 
+	"github.com/pkg/errors"
 	"github.com/whatthefar/monorepo-toolkit/pkg/core"
 	"github.com/whatthefar/monorepo-toolkit/pkg/pipeline"
 )
@@ -16,6 +16,10 @@ func NewPipeline(tool string) (core.PipelineGateway, error) {
 		return nil, errors.New(fmt.Sprintf(`CI_TOOl "%s" is not currently supported`, tool))
 	case "github":
 		env := pipeline.NewGitHubActionEnv()
+		err := env.Validate()
+		if err != nil {
+			return nil, errors.Wrap(err, "fail to validate envs for github action")
+		}
 		return pipeline.NewGitHubActionGateway(env), nil
 	case "travis":
 		return nil, errors.New(fmt.Sprintf(`CI_TOOl "%s" is not currently supported`, tool))
