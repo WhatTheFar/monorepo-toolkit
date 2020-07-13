@@ -26,7 +26,7 @@ type listCmdFlag struct {
 
 func newListProjectsCmdFlag() *listProjectsCmdFlag {
 	f := &listProjectsCmdFlag{}
-	viper.Unmarshal(f)
+	listCmdViper.Unmarshal(f)
 	return f
 }
 
@@ -56,6 +56,8 @@ func (f *listCmdFlag) validate() error {
 var (
 	listCmd         *cobra.Command
 	listProjectsCmd *cobra.Command
+
+	listCmdViper = viper.New()
 
 	ciControllerFactory = factory.CIController
 )
@@ -101,13 +103,13 @@ List requires a subcommand, e.g., ` + "`monorepo-toolkit list projects`",
 
 	listCmd.PersistentFlags().StringP("ci-tool", "C", "", `CI provider, e.g., "github"`)
 	listCmd.PersistentFlags().StringP("workflow", "W", "", "Workflow ID, e.g., a file name for github action")
-	viper.BindPFlag("ciTool", listCmd.PersistentFlags().Lookup("ci-tool"))
-	viper.BindPFlag("workflowID", listCmd.PersistentFlags().Lookup("workflow"))
-	viper.BindEnv("ciTool", "CI_TOOL")
-	viper.BindEnv("workflowID", "WORKFLOW_ID")
+	listCmdViper.BindPFlag("ciTool", listCmd.PersistentFlags().Lookup("ci-tool"))
+	listCmdViper.BindPFlag("workflowID", listCmd.PersistentFlags().Lookup("workflow"))
+	listCmdViper.BindEnv("ciTool", "CI_TOOL")
+	listCmdViper.BindEnv("workflowID", "WORKFLOW_ID")
 
 	listProjectsCmd.Flags().Bool("join", false, `join projects into single project (default false)`)
-	viper.BindPFlag("join", listProjectsCmd.Flags().Lookup("join"))
+	listCmdViper.BindPFlag("join", listProjectsCmd.Flags().Lookup("join"))
 
 	listCmd.AddCommand(listProjectsCmd)
 
