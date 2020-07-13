@@ -1,3 +1,5 @@
+//go:generate mockgen -destination mock/controller.go . CIControllerFactory
+
 package factory
 
 import (
@@ -9,7 +11,17 @@ import (
 	"github.com/whatthefar/monorepo-toolkit/pkg/interface/presenter"
 )
 
-func NewCIController(gitWorkDir string, tool string) (controller.CI, error) {
+var (
+	CIController CIControllerFactory = &ciControllerFactory{}
+)
+
+type CIControllerFactory interface {
+	New(gitWorkDir string, tool string) (controller.CI, error)
+}
+
+type ciControllerFactory struct{}
+
+func (f *ciControllerFactory) New(gitWorkDir string, tool string) (controller.CI, error) {
 	git, err := git.NewGitGateway(gitWorkDir)
 	if err != nil {
 		return nil, err
