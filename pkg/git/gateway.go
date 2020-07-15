@@ -8,6 +8,7 @@ import (
 	gogit "github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/go-git/go-git/v5/utils/merkletrie"
 	"github.com/pkg/errors"
 
 	"github.com/whatthefar/monorepo-toolkit/pkg/core"
@@ -128,19 +129,15 @@ func (g *gitGateway) DiffNameOnly(from core.Hash, to core.Hash) ([]string, error
 		return nil, errors.Wrap(err, "can't get diff changes between trees")
 	}
 
-	// get file patch from changes
-	patch, err := changes.Patch()
-	if err != nil {
-		return nil, errors.Wrap(err, "can't get file patch from changes")
+	changedPaths := make([]string, 0)
+	for _, v := range changes {
+		action, _ := v.Action()
+		if action == merkletrie.Delete || action == merkletrie.Modify {
+			changedPaths = append(changedPaths, v.From.Name)
+		}
+		if action == merkletrie.Insert {
+			changedPaths = append(changedPaths, v.To.Name)
+		}
 	}
-
-	changeStats := patch.Stats()
-
-	fileNames := make([]string, len(changeStats))
-	for i, v := range changeStats {
-		fileNames[i] = v.Name
-
-	}
-
-	return fileNames, nil
+	return changedPaths, nil
 }

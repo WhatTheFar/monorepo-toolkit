@@ -170,3 +170,57 @@ func TestGitGateway_DiffNameOnly(t *testing.T) {
 		}
 	})
 }
+
+func TestGitGateway_DiffNameOnly_Submodules(t *testing.T) {
+	Convey("Given a repository with submodules", t, func() {
+		repo := gitfixture.SubmodulesRepository()
+		git, err := NewGitGateway(repo.WorkDir())
+
+		So(err, ShouldBeNil)
+
+		cases := []*struct {
+			from  string
+			to    string
+			files []string
+		}{
+			{
+				from: "837541c1cc4e7c9895dac58838cafb2de0c64fa9", to: "f5e4c774289e4381e4dde954c774441f61783cc0",
+				files: []string{
+					".gitmodules",
+					"services/app1",
+					"services/app2",
+				},
+			},
+			{
+				from: "ab010a95d044a8112f0eca9b8b70d375d79a7a37", to: "f5e4c774289e4381e4dde954c774441f61783cc0",
+				files: []string{
+					"services/app2",
+				},
+			},
+			{
+				from: "0f263b81cb8d62d8c43500f74c3319c25744a2bc", to: "ab010a95d044a8112f0eca9b8b70d375d79a7a37",
+				files: []string{
+					"services/app1",
+				},
+			},
+		}
+
+		for i, v := range cases {
+			var (
+				from = v.from
+				to   = v.to
+				want = v.files
+			)
+
+			Convey(fmt.Sprintf("Case %d, when call DiffNameOnly from \"%s\" to \"%s\"", i+1, from, to), func() {
+				got, err := git.DiffNameOnly(core.Hash(from), core.Hash(to))
+
+				url := gitfixture.BasicRepository().CompareURL(from, to)
+				Convey(fmt.Sprintf("Then it should return all changes (%s)", url), func() {
+					So(err, ShouldBeNil)
+					So(got, ShouldResemble, want)
+				})
+			})
+		}
+	})
+}
