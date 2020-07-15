@@ -4,6 +4,7 @@ package controller
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -66,6 +67,10 @@ func (c *ci) ListProjects(ctx context.Context, paths []string, workflowID string
 	if err != nil {
 		return nil, errors.Wrap(err, "can't list projects that have changes")
 	}
+	// TODO: use presenter
+	for _, project := range projects {
+		fmt.Println(project)
+	}
 	return projects, nil
 }
 
@@ -80,6 +85,8 @@ func (c *ci) ListProjectsJoined(ctx context.Context, paths []string, workflowID 
 	if err != nil {
 		return "", errors.Wrap(err, "can't list projects that have changes")
 	}
+	// TODO: use presenter
+	fmt.Println(project)
 	return project, nil
 }
 
