@@ -11,9 +11,10 @@ import (
 var (
 	rootDir string
 
-	basic    *gitHubRepository = nil
-	shallow  *gitHubRepository = nil
-	pipeline *gitHubRepository = nil
+	basic      *gitHubRepository = nil
+	shallow    *gitHubRepository = nil
+	pipeline   *gitHubRepository = nil
+	submodules *gitHubRepository = nil
 )
 
 func getRootDir() string {
@@ -63,6 +64,18 @@ func PipelineRepository() GitRepository {
 		}
 	}
 	return pipeline
+}
+
+func SubmodulesRepository() GitRepository {
+	if submodules == nil {
+		submodules = &gitHubRepository{
+			owner:     "WhatTheFar",
+			repo:      "monorepo-toolkit-git-fixture-submodules",
+			relDir:    "test/git-fixtures/submodules",
+			submodule: "git-fixture-submodules",
+		}
+	}
+	return submodules
 }
 
 type GitRepository interface {

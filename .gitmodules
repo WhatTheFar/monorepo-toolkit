@@ -5,3 +5,6 @@
 	path = test/git-fixtures/basic-shallow
 	url = https://github.com/WhatTheFar/monorepo-toolkit-git-fixture-basic.git
 	shallow = true
+[submodule "git-fixture-submodules"]
+	path = test/git-fixtures/submodules
+	url = https://github.com/WhatTheFar/monorepo-toolkit-git-fixture-submodules.git
