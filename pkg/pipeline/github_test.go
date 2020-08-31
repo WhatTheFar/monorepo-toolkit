@@ -26,7 +26,7 @@ func requireEnv(t *testing.T, key string) string {
 }
 
 func TestGetJobIDFromJobURL(t *testing.T) {
-	cases := []struct {
+	cases := []*struct {
 		url         string
 		id          int64
 		shouldError bool
