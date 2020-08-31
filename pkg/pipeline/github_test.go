@@ -122,6 +122,10 @@ func TestGitHubActionGateway_LastSuccesfulCommit(t *testing.T) {
 				workflowID: "build-failed.yml",
 				sha:        "7163c77dbfb2ed57eab8de7eacc528081eb702c1",
 			},
+			{
+				workflowID: "nop.yml",
+				sha:        "",
+			},
 		}
 
 		for i, v := range cases {
