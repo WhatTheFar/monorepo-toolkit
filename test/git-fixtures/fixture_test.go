@@ -7,8 +7,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestGitRepository_IsShallow(t *testing.T) {
+	assert.False(t, BasicRepository().IsShallow())
+	assert.True(t, BasicShallowRepository().IsShallow())
+}
+
 func TestGitRepository_SubmoduleUpdate(t *testing.T) {
-	repo := BasicRepository()
+	repo := BasicShallowRepository()
 	repo.DeleteDotGit()
 	repo.DeleteWorkDir()
 
@@ -33,4 +38,7 @@ func TestGitRepository_SubmoduleUpdate(t *testing.T) {
 	assert.NotNil(t, info)
 	assert.True(t, info.IsDir())
 	assert.False(t, os.IsNotExist(err))
+
+	// assert if repo still shallow
+	assert.True(t, repo.IsShallow())
 }

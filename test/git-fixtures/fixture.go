@@ -79,6 +79,7 @@ func SubmodulesRepository() GitRepository {
 }
 
 type GitRepository interface {
+	IsShallow() bool
 	Owner() string
 	Repository() string
 	CompareURL(from, to string) string
@@ -145,4 +146,18 @@ func (r *gitHubRepository) SubmoduleUpdate() {
 		panic(err)
 	}
 	return
+}
+
+func (r *gitHubRepository) IsShallow() bool {
+	cmd := exec.
+		Command("git", "rev-parse", "--git-dir")
+	cmd.Dir = r.WorkDir()
+	dotGitBytes, err := cmd.Output()
+	if err != nil {
+		panic(err)
+	}
+	dotGit := strings.TrimSuffix(string(dotGitBytes), "\n")
+	shallowPath := filepath.Join(dotGit, "shallow")
+	_, err = os.Stat(shallowPath)
+	return !os.IsNotExist(err)
 }
