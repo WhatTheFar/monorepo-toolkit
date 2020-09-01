@@ -63,6 +63,21 @@ func (mr *MockGitGatewayMockRecorder) EnsureHavingCommitFromTip(arg0, arg1 inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureHavingCommitFromTip", reflect.TypeOf((*MockGitGateway)(nil).EnsureHavingCommitFromTip), arg0, arg1)
 }
 
+// FilesNameOnly mocks base method
+func (m *MockGitGateway) FilesNameOnly(arg0 core.Hash) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FilesNameOnly", arg0)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FilesNameOnly indicates an expected call of FilesNameOnly
+func (mr *MockGitGatewayMockRecorder) FilesNameOnly(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FilesNameOnly", reflect.TypeOf((*MockGitGateway)(nil).FilesNameOnly), arg0)
+}
+
 // IsNoCommit mocks base method
 func (m *MockGitGateway) IsNoCommit(arg0 error) bool {
 	m.ctrl.T.Helper()

@@ -103,6 +103,100 @@ func TestGitGateway_hasCommit(t *testing.T) {
 	})
 }
 
+func TestGitGateway_FilesNameOnly(t *testing.T) {
+	Convey("Given a basic repository", t, func() {
+		type c struct {
+			commit      string
+			files       []string
+			shouldError bool
+		}
+		suites := []*struct {
+			repo  gitfixture.GitRepository
+			cases []*c
+		}{
+			{
+				repo: gitfixture.BasicRepository(),
+				cases: []*c{
+					{
+						commit: "0f998bc84e0b5e764391e22bb554d9705fa7c6c3",
+						files: []string{
+							"README.md",
+							"services/app1/README.md",
+							"services/app2/README.md",
+							"services/app3/README.md",
+						},
+					},
+					{
+						commit: "64bd0efceae7f8abfd675a2eaadcf3b5aa04e2b1",
+						files: []string{
+							"README.md",
+						},
+					},
+					{
+						commit: "55b8c896b86815f519d30c90b431bf8c56bcb278",
+						files: []string{
+							"README.md",
+							"services/app1/README.md",
+							"services/app2/README.md",
+						},
+					},
+				},
+			},
+			{
+				repo: gitfixture.BasicShallowRepository(),
+				cases: []*c{
+					{
+						commit: "0f998bc84e0b5e764391e22bb554d9705fa7c6c3",
+						files: []string{
+							"README.md",
+							"services/app1/README.md",
+							"services/app2/README.md",
+							"services/app3/README.md",
+						},
+					},
+					{
+						commit: "64bd0efceae7f8abfd675a2eaadcf3b5aa04e2b1",
+						files: []string{
+							"README.md",
+						},
+						shouldError: true,
+					},
+				},
+			},
+		}
+
+		for _, s := range suites {
+			Convey(fmt.Sprintf("Given a GitGateway for %s repository", s.repo.SubmoduleName()), func() {
+				git, err := NewGitGateway(s.repo.WorkDir())
+
+				So(err, ShouldBeNil)
+
+				for i, v := range s.cases {
+					var (
+						commit = v.commit
+						want   = v.files
+					)
+
+					Convey(fmt.Sprintf("Case %d, when call FilesNameOnly with commit \"%s\"", i+1, commit), func() {
+						got, err := git.FilesNameOnly(core.Hash(commit))
+
+						url := gitfixture.BasicRepository().CommitURL(commit)
+						Convey(fmt.Sprintf("Then it should return all changes (%s)", url), func() {
+							if v.shouldError == true {
+								So(err, ShouldNotBeNil)
+								So(got, ShouldBeNil)
+							} else {
+								So(err, ShouldBeNil)
+								So(got, ShouldResemble, want)
+							}
+						})
+					})
+				}
+			})
+		}
+	})
+}
+
 func TestGitGateway_DiffNameOnly(t *testing.T) {
 	Convey("Given a basic repository", t, func() {
 		repo := gitfixture.BasicRepository()

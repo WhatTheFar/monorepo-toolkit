@@ -99,6 +99,25 @@ func (g *gitGateway) hasCommit(sha core.Hash) (bool, error) {
 	return true, nil
 }
 
+func (g *gitGateway) FilesNameOnly(commit core.Hash) ([]string, error) {
+	commitHash := plumbing.NewHash(string(commit))
+
+	// get commit objects
+	toCommit, err := g.repo.CommitObject(commitHash)
+	if err != nil {
+		return nil, errors.Wrap(err, "can't get commit object of the `commit` hash")
+	}
+
+	// get tree objects
+	fromTree := &object.Tree{}
+	toTree, err := toCommit.Tree()
+	if err != nil {
+		return nil, errors.Wrap(err, "can't get tree object of the `to` commit object")
+	}
+
+	return diffNameOnly(fromTree, toTree)
+}
+
 func (g *gitGateway) DiffNameOnly(from core.Hash, to core.Hash) ([]string, error) {
 	fromHash := plumbing.NewHash(string(from))
 	toHash := plumbing.NewHash(string(to))
@@ -123,18 +142,25 @@ func (g *gitGateway) DiffNameOnly(from core.Hash, to core.Hash) ([]string, error
 		return nil, errors.Wrap(err, "can't get tree object of the `to` commit object")
 	}
 
+	return diffNameOnly(fromTree, toTree)
+}
+
+func diffNameOnly(from *object.Tree, to *object.Tree) ([]string, error) {
 	// get changes
-	changes, err := object.DiffTree(fromTree, toTree)
+	changes, err := object.DiffTree(from, to)
 	if err != nil {
 		return nil, errors.Wrap(err, "can't get diff changes between trees")
 	}
 
+	// can't use Patch or FileIter, since it ignore submodule file type
 	changedPaths := make([]string, 0)
 	for _, v := range changes {
 		action, _ := v.Action()
+		// For deletions `to` will be nil. Use `from`.
 		if action == merkletrie.Delete || action == merkletrie.Modify {
 			changedPaths = append(changedPaths, v.From.Name)
 		}
+		// For insertions `from` will be nil. Use `to`.
 		if action == merkletrie.Insert {
 			changedPaths = append(changedPaths, v.To.Name)
 		}
