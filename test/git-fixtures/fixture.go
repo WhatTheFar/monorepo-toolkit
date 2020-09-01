@@ -154,15 +154,7 @@ func (r *gitHubRepository) SubmoduleUpdate() {
 }
 
 func (r *gitHubRepository) IsShallow() bool {
-	cmd := exec.
-		Command("git", "rev-parse", "--git-dir")
-	cmd.Dir = r.WorkDir()
-	dotGitBytes, err := cmd.Output()
-	if err != nil {
-		panic(err)
-	}
-	dotGit := strings.TrimSuffix(string(dotGitBytes), "\n")
-	shallowPath := filepath.Join(dotGit, "shallow")
-	_, err = os.Stat(shallowPath)
+	shallowPath := filepath.Join(r.DotGit(), "shallow")
+	_, err := os.Stat(shallowPath)
 	return !os.IsNotExist(err)
 }
