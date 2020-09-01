@@ -28,7 +28,7 @@ func TestGitGateway_EnsureHavingCommitFromTip(t *testing.T) {
 	Convey("Given a newly cloned basic-shallow repository", t, func() {
 		ctx := context.Background()
 		repo := gitfixture.BasicShallowRepository()
-		repo.DeleteDotGit()
+
 		repo.DeleteWorkDir()
 		repo.SubmoduleUpdate()
 
@@ -61,6 +61,9 @@ func TestGitGateway_EnsureHavingCommitFromTip(t *testing.T) {
 				So(isNocommit, ShouldBeTrue)
 			})
 		})
+
+		repo.DeleteWorkDir()
+		repo.SubmoduleUpdate()
 	})
 }
 
