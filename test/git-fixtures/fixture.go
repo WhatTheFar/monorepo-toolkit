@@ -88,6 +88,7 @@ type GitRepository interface {
 	DotGit() string
 	DeleteWorkDir()
 	DeleteDotGit()
+	SubmoduleName() string
 	SubmoduleUpdate()
 }
 
@@ -140,6 +141,10 @@ func (r *gitHubRepository) DeleteDotGit() {
 		panic(err)
 	}
 	return
+}
+
+func (r *gitHubRepository) SubmoduleName() string {
+	return r.submodule
 }
 
 func (r *gitHubRepository) SubmoduleUpdate() {
