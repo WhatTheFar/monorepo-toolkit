@@ -183,8 +183,7 @@ func TestGitGateway_FilesNameOnly(t *testing.T) {
 					Convey(fmt.Sprintf("Case %d, when call FilesNameOnly with commit \"%s\"", i+1, commit), func() {
 						got, err := git.FilesNameOnly(core.Hash(commit))
 
-						url := gitfixture.BasicRepository().CommitURL(commit)
-						Convey(fmt.Sprintf("Then it should return all changes (%s)", url), func() {
+						Convey(fmt.Sprintf("Then it should return all files name"), func() {
 							if v.shouldError == true {
 								So(err, ShouldNotBeNil)
 								So(got, ShouldBeNil)
