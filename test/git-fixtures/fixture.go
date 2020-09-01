@@ -82,6 +82,7 @@ type GitRepository interface {
 	IsShallow() bool
 	Owner() string
 	Repository() string
+	CommitURL(commit string) string
 	CompareURL(from, to string) string
 	WorkDir() string
 	DotGit() string
@@ -107,6 +108,10 @@ func (r *gitHubRepository) Owner() string {
 
 func (r *gitHubRepository) Repository() string {
 	return r.repo
+}
+
+func (r *gitHubRepository) CommitURL(commit string) string {
+	return fmt.Sprintf("%s/commit/%s", r.repositoryURL(), commit)
 }
 
 func (r *gitHubRepository) CompareURL(from, to string) string {
