@@ -50,46 +50,97 @@ func TestListChangesInteractor(t *testing.T) {
 
 		interactor := &listChangesInteractor{git, pipeline}
 
-		Convey("When calls Execute", func() {
-			paths := []string{"services/app1"}
-			workflowID := "main.yml"
+		workflowID := "main.yml"
+		var lastCommit core.Hash
+		var currentCommit core.Hash
 
-			lastCommit := core.Hash("123")
-			currentCommit := core.Hash("456")
+		ctxType := reflect.TypeOf((*context.Context)(nil)).Elem()
 
-			ctxType := reflect.TypeOf((*context.Context)(nil)).Elem()
-			pipeline.EXPECT().
-				LastSuccessfulCommit(gomock.AssignableToTypeOf(ctxType), gomock.Eq(workflowID)).
-				Return(lastCommit, nil)
-			pipeline.EXPECT().
-				CurrentCommit().
-				Return(currentCommit)
-			git.EXPECT().
-				EnsureHavingCommitFromTip(
-					gomock.AssignableToTypeOf(ctxType),
-					gomock.Eq(lastCommit),
-				).
-				Return(nil)
-			git.EXPECT().
-				DiffNameOnly(
-					gomock.Eq(lastCommit),
-					gomock.Eq(currentCommit),
-				).
-				Return([]string{
-					"services/app1/README.md",
-					"services/app2/README.md",
-					"services/app3/README.md",
-				}, nil)
+		cases := []*struct {
+			paths         []string
+			lastCommit    string
+			currentCommit string
+			want          []string
+			expect        func()
+		}{
+			{
+				paths:         []string{"services/app1"},
+				lastCommit:    "123",
+				currentCommit: "456",
+				want:          []string{"services/app1"},
+				expect: func() {
+					pipeline.EXPECT().
+						LastSuccessfulCommit(gomock.AssignableToTypeOf(ctxType), gomock.Eq(workflowID)).
+						Return(lastCommit, nil)
+					pipeline.EXPECT().
+						CurrentCommit().
+						Return(currentCommit)
 
-			want := []string{
-				"services/app1",
-			}
+					git.EXPECT().
+						EnsureHavingCommitFromTip(
+							gomock.AssignableToTypeOf(ctxType),
+							gomock.Eq(lastCommit),
+						).
+						Return(nil)
+					git.EXPECT().
+						DiffNameOnly(
+							gomock.Eq(lastCommit),
+							gomock.Eq(currentCommit),
+						).
+						Return([]string{
+							"services/app1/README.md",
+							"services/app2/README.md",
+							"services/app3/README.md",
+						}, nil)
+				},
+			},
+			{
+				paths: []string{"services/app1"},
+				// no lastSuccessfulCommit
+				lastCommit:    "",
+				currentCommit: "456",
+				want:          []string{"services/app1"},
+				expect: func() {
+					pipeline.EXPECT().
+						LastSuccessfulCommit(gomock.AssignableToTypeOf(ctxType), gomock.Eq(workflowID)).
+						Return(lastCommit, nil)
+					pipeline.EXPECT().
+						CurrentCommit().
+						Return(currentCommit)
 
-			got, err := interactor.ListChanges(ctx, paths, workflowID)
+					git.EXPECT().
+						FilesNameOnly(
+							gomock.Eq(currentCommit),
+						).
+						Return([]string{
+							"services/app1/README.md",
+							"services/app2/README.md",
+							"services/app3/README.md",
+						}, nil)
+				},
+			},
+		}
 
-			So(err, ShouldBeNil)
-			So(got, ShouldResemble, want)
-		})
+		for i, v := range cases {
+			var (
+				paths  = v.paths
+				want   = v.want
+				expect = v.expect
+			)
+			lastCommit = core.Hash(v.lastCommit)
+			currentCommit = core.Hash(v.currentCommit)
+
+			Convey(fmt.Sprintf("Case %d, given mocks", i), func() {
+				expect()
+
+				Convey("When calls Execute", func() {
+					got, err := interactor.ListChanges(ctx, paths, workflowID)
+
+					So(err, ShouldBeNil)
+					So(got, ShouldResemble, want)
+				})
+			})
+		}
 	})
 }
 

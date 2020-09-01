@@ -27,11 +27,21 @@ func (it *listChangesInteractor) ListChanges(ctx context.Context, paths []string
 		return nil, errors.Wrapf(err, "can't get last succesful commit for workflow ID %s", workflowID)
 	}
 	currentCommit := it.pipeline.CurrentCommit()
+	if lastCommit == "" {
+		files, err := it.git.FilesNameOnly(currentCommit)
+		if err != nil {
+			return nil, errors.Wrapf(err, `can't list file paths for commit "%s"`, currentCommit)
+		}
+		return filterOnlyPathsWithChanges(paths, files), nil
+	}
 	// Since a local git repository might be a shallow clone,
 	// we have to ensure there is enough information for listing changes.
 	it.git.EnsureHavingCommitFromTip(ctx, lastCommit)
 
 	changes, err := it.git.DiffNameOnly(core.Hash(lastCommit), core.Hash(currentCommit))
+	if err != nil {
+		return nil, errors.Wrapf(err, `can't list changes from commit "%s" to "%s"`, lastCommit, currentCommit)
+	}
 
 	return filterOnlyPathsWithChanges(paths, changes), nil
 }
