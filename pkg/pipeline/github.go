@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/google/go-github/v32/github"
@@ -58,6 +59,10 @@ func (s *gitHubActionGateway) LastSuccessfulCommit(
 ) (core.Hash, error) {
 	opts := &github.ListWorkflowRunsOptions{
 		Branch: s.env.Branch(),
+	}
+	// if workflow is triggered by tag, ignore branch filter
+	if strings.HasPrefix(s.env.Ref(), "refs/tags")  {
+		opts.Branch = ""
 	}
 	workflowRuns, _, err := s.client(ctx).Actions.ListWorkflowRunsByFileName(
 		ctx,
