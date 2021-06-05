@@ -61,7 +61,7 @@ func (s *gitHubActionGateway) LastSuccessfulCommit(
 		Branch: s.env.Branch(),
 	}
 	// if workflow is triggered by tag, ignore branch filter
-	if strings.HasPrefix(s.env.Ref(), "refs/tags")  {
+	if strings.HasPrefix(s.env.Ref(), "refs/tags") {
 		opts.Branch = ""
 	}
 	workflowRuns, _, err := s.client(ctx).Actions.ListWorkflowRunsByFileName(
