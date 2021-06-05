@@ -12,6 +12,6 @@ var (
 )
 
 func er(msg interface{}) {
-	fmt.Println("Error:", msg)
+	fmt.Fprintln(os.Stderr, "Error:", msg)
 	os.Exit(1)
 }
