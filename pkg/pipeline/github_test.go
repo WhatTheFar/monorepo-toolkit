@@ -139,6 +139,7 @@ func TestGitHubActionGateway_LastSuccesfulCommit(t *testing.T) {
 				env.EXPECT().Owner().Return(repo.Owner())
 				env.EXPECT().Repository().Return(repo.Repository())
 				env.EXPECT().Branch().Return("master")
+				env.EXPECT().Ref().Return("refs/origin/master")
 				got, err := gw.LastSuccessfulCommit(ctx, workflowID)
 
 				Convey("Then it should return commit hash with no error", func() {
