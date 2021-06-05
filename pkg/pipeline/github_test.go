@@ -177,7 +177,7 @@ func TestGitHubActionGateway_CurrentCommit(t *testing.T) {
 				want = core.Hash(sha)
 			)
 
-			Convey(fmt.Sprintf("Case %d, when LastSuccessfulCommit is called with sha env \"%s\", on git-fixture-pipeline", i+1, sha), func() {
+			Convey(fmt.Sprintf("Case %d, when CurrentCommit is called with sha env \"%s\", on git-fixture-pipeline", i+1, sha), func() {
 				env.EXPECT().Sha().Return(sha)
 				got := gw.CurrentCommit()
 
